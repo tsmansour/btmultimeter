@@ -1,12 +1,12 @@
 #:kivy 1.0.9
 
-<MenuButton>:
+<ModeButton>:
     size: 50, 50
+    Button:
+        size: self.size
+        pos: self.pos
+        title: "Hello"
 
 
-<MenuSelect>:
-    GridLayout:
-        rows: 10
-        cols: 1
-        padding: 10
-        spacing: 10
+<MainLayout>:
+

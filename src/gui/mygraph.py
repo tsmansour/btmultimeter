@@ -1,6 +1,7 @@
 from kivy.core.window import Window
 from kivy.input.providers.mouse import MouseMotionEvent
 from kivy.uix.popup import Popup
+from kivymd.uix.button import MDIconButton
 
 from graph import Graph, MeshLinePlot, VBar, Point, PointPlot
 from kivy.utils import get_color_from_hex as rgb
@@ -11,6 +12,9 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.dropdown import DropDown
+from kivymd.icon_definitions import md_icons as Icons
+from kivy.config import Config
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 
 
 class GraphProfile:
@@ -50,7 +54,7 @@ class GraphWidget(Graph):
         self.border_color = rgb('f8f8f2')
         self.tick_color = rgb('808080')
         self.border_color = rgb('808080')
-        self.queue = myQueue(100)
+        self.queue = myQueue(1000)
         self.point_label = Label(font_size='9sp')
         self.point_label.color = rgb('000000')
         self.add_widget(self.point_label)
@@ -64,17 +68,14 @@ class GraphWidget(Graph):
         self.plot_points.point_size = 10
         self.add_plot(self.plot_points)
         self.currentTime = 0
-        self.evenTrigger = Clock.create_trigger(self.update_points, interval=True, timeout=1/10)
+        self.evenTrigger = self._getNewEventTrigger()
         self.bind(on_touch_up=self._touch_up)
 
 
-    def _touch_up(self, *touch):
-        self.x_start = self.pos[0] + self.view_pos[0]
-        self.x_end = self.x_start + self.view_size[0]
-        self.y_start = self.pos[1] + self.view_pos[1]
-        self.y_end = self.y_start + self.view_size[1]
-        if self.x_start < touch[1].x < self.x_end and self.y_start < touch[1].y < self.y_end:
-            x, y = self.window_position_to_graph_value(*touch[1].pos)
+    def _touch_up(self, graphwidget, mouseMotion: MouseMotionEvent ):
+        self._set_selectable_graph_window()
+        if self.x_start < mouseMotion.x < self.x_end and self.y_start < mouseMotion.y < self.y_end:
+            x, y = self._window_position_to_graph_value(*mouseMotion.pos)
             if 0 != len(self.plot.points):
                 # https://www.geeksforgeeks.org/python-find-closest-number-to-k-in-given-list/
                 point_ref = self.plot.points[min(range(len(self.plot.points)),
@@ -86,10 +87,23 @@ class GraphWidget(Graph):
                     self.point_label.pos = Window.width - self.point_label.width - 10, self.graph_pos_to_window_pos(*point_ref)[1]
                 else:
                     self.point_label.pos = self.graph_pos_to_window_pos(*point_ref)
-                self.plot_points.points.append(point_ref)
+                if 'right' == mouseMotion.button:
+                    if len( self.plot_points.points):
+                        self.plot_points.points.pop()
+                else:
+                    self.plot_points.points.append(point_ref)
                 print(f'X:{x} Y:{y}')
 
-    def window_position_to_graph_value(self, x, y):
+    def _getNewEventTrigger(self):
+        return Clock.create_trigger(self.update_points, interval=True, timeout=1/10)
+
+    def _set_selectable_graph_window(self):
+        self.x_start = self.pos[0] + self.view_pos[0]
+        self.x_end = self.x_start + self.view_size[0]
+        self.y_start = self.pos[1] + self.view_pos[1]
+        self.y_end = self.y_start + self.view_size[1]
+
+    def _window_position_to_graph_value(self, x, y):
         x_out = self.xmin + (x - self.x_start) * (self.xmax - self.xmin) / self.view_size[0]
         y_out = self.ymin + (y - self.y_start) * (self.ymax - self.ymin) / self.view_size[1]
         return x_out, y_out
@@ -102,15 +116,15 @@ class GraphWidget(Graph):
     def startClock(self):
         self.evenTrigger()
 
-    def pauseClock(self):
-        Clock.unschedule(self.evenTrigger)
+    def stopClock(self):
+        self.evenTrigger()
 
     def reset(self):
         self.currentTime = 0
         self.xmax = 10
         self.xmin = 0
         self.queue.clear()
-        self.plot.points = self.queue.get()
+        self.plot.points = []
 
     def add_point(self, value, timeDif):
         time = self.currentTime + timeDif
@@ -120,9 +134,8 @@ class GraphWidget(Graph):
             self.xmin += 5
         if len(self.plot_points.points):
             self.point_label.pos = self.graph_pos_to_window_pos(*self.plot_points.points[0])
+        self.queue.addToeQueue(value, self.currentTime)
         self.currentTime = time
-        self.queue.addToeQueue(value, time)
-
 
     def update_points(self, *args):
         self.plot.points = self.queue.get()
@@ -167,8 +180,9 @@ class SaveButtonWithDropdown(Button):
         self.dropdown.opacity = 0
         self.dropdown.auto_dismiss = True
         self.add_widget(self.dropdown)
+        self.bind(on_release=self.buttonRelease)
 
-    def on_release(self, *args):
+    def buttonRelease(self, *args):
         self.dropdown.open(self)
         self.dropdown.opacity = 100
 
@@ -209,41 +223,42 @@ class GraphLayout(GridLayout):
         buttonRow = BoxLayout()
         buttonRow.orientation = "horizontal"
         buttonRow.spacing = 100
-        buttonRow.size_hint_max_y = 100
+        buttonRow.size_hint_max_y = 50
         buttonRow.padding = [100, 0]
         config = Button(text='Config')
         config.bind(on_press=self.configPress)
-        recordButton = Button(text='Record')
+        recordButton = Button(text='START')
+        recordButton.background_color = kwargs.get('background_color', rgb('ffffffff'))
         recordButton.bind(on_press=self.recordPress)
-        resetButton = Button(text='Reset')
-        resetButton.bind(on_press=self.resetPress)
         saveDropdown = SaveButtonWithDropdown(text='Save', assigned_graph=self.graph)
         buttonRow.add_widget(recordButton)
-        buttonRow.add_widget(resetButton)
         buttonRow.add_widget(saveDropdown)
-        buttonRow.add_widget(config)
+
 
         self.add_widget(buttonRow)
         self.add_widget(self.graph)
-        self.state_record = True
+        self.state_record = 0
 
 
     def recordPress(self, *args):
-        if self.state_record:
-            self.state_record = False
-            args[0].text = 'START'
-            self.graph.pauseClock()
-        else:
-            self.state_record = True
-            args[0].text = 'PAUSE'
+        if self.state_record == 0:
+            self.state_record = 1
             self.graph.startClock()
+            args[0].text = 'STOP'
+
+        elif self.state_record == 1:
+            self.state_record = 2
+            self.graph.stopClock()
+            args[0].text = 'RESET'
+        else:
+            self.state_record = 0
+            self.graph.reset()
+            args[0].text = 'START'
 
     def configPress(self, *args):
         print('config done')
 
-    def resetPress(self, *args):
-        self.graph.reset()
 
     def addpoint(self, value, time):
-        if self.state_record:
+        if self.state_record == 1:
             self.graph.add_point(value, time)

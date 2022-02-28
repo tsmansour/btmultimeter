@@ -1,3 +1,4 @@
+import itertools
 import random
 
 from kivy.app import App
@@ -8,7 +9,7 @@ from kivy.core.window import Window
 from kivy.uix.button import Button
 from kivy.uix.recycleview import RecycleView
 from kivy.clock import Clock
-from mygraph import GraphLayout
+from mygraph import GraphLayout, GraphProfile
 
 ModeButtonsOptions = ['V~', 'V=', 'A', 'Ω', 'C/F', 'Light', '+']
 
@@ -61,15 +62,22 @@ class MainGrid(GridLayout):
         self.cols = 2
         menu = ModeSelectList()
         self.add_widget(menu, index=1)
-        self.graph = GraphLayout()
+        self.graphdata = GraphProfile()
+        self.graph = GraphLayout(self.graphdata)
         self.add_widget(self.graph, index=0)
         Clock.schedule_interval(self.fakeData, 1 / 10)
+        Clock.schedule_interval(self.fakechange, 4)
 
-    testpoint = 120
+    testpoint = 50
 
     def fakeData(self, *args):
         self.testpoint += random.choice([-1, 1]) * random.random()
         self.graph.addpoint(self.testpoint, args[0])
+
+    ymaxss = itertools.cycle([120, 140, 160])
+    def fakechange(self, *args):
+        self.graphdata.ymax = next(self.ymaxss)
+        self.graph.updatetoLatestGraphProfile()
 
 
 class MultiMeterApp(App):

@@ -66,7 +66,7 @@ class MainGrid(GridLayout):
     def fakeData(self, *args):
 
         self.testpoint += random.choice([-1, 1]) * random.random()
-        self.digitalDisplay.updateDisplay(self.testpoint)
+        self.digitalDisplay.addpoint(self.testpoint)
         self.graph.addpoint(self.testpoint, args[0])
 
     ymaxss = itertools.cycle([120, 140, 160])

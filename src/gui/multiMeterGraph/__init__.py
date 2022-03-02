@@ -241,7 +241,7 @@ class GraphTopRow(BoxLayout):
     def __init__(self, assignedGraph, **kwargs):
         super().__init__(**kwargs)
         self.orientation = "horizontal"
-        self.size_hint_max_y = 30
+        self.size_hint_y = .05
         self.recordButton = Button(text='START')
         self.recordButton.background_normal = 'assets/start.png'
         self.saveDropdown = SaveButtonWithDropdown(assigned_graph=assignedGraph)
@@ -263,7 +263,7 @@ class GraphTitleInput(GridLayout):
         super().__init__(**kwargs)
         self.cols = 2
         self.title_input = TextInput(text='Graph', multiline=False, halign='left')
-        self.label = Label(text='Title:', size_hint_max_x=35)
+        self.label = Label(text='Title:', size_hint_x=.20)
         self.add_widget(self.label)
         self.add_widget(self.title_input)
         self.size_hint_max_y = 40

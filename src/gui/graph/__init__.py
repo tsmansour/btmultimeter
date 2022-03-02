@@ -163,10 +163,6 @@ class Graph(Widget):
     '''
 
     def __init__(self, **kwargs):
-        """
-
-        :rtype: object
-        """
         super(Graph, self).__init__(**kwargs)
 
         with self.canvas:

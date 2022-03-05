@@ -1,0 +1,68 @@
+from queue import Queue
+
+MODES = {
+	0: 'Light Sensor',
+	1: 'Temperature Sensor',
+	2: 'Voltmeter',
+	3: 'Ammeter',
+	4: 'Ohmmeter',
+}
+
+# Add dividers and max/min when available here
+ATTENUATION = {
+	0: {'Voltmeter': (100000, 0.4, -0.4), 'Ohmmeter': (100, 400, 0)},
+	1: {'Voltmeter': (10000, 4.0, -4.0), 'Ohmmeter': (10, 4000, 0)},
+	2: {'Voltmeter': (1000, 40, -40), 'Ohmmeter': (1, 40000, 0)},
+	3: {'Voltmeter': (100, 400, -400), 'Ohmmeter': (0.1, 400000, 0)},
+	4: {'Voltmeter': (10, 4000, -4000), 'Ohmmeter': (0.01, 4000000, 0)},
+	5: {'Voltmeter': (1, 40000, -40000), 'Ohmmeter': (0.001, 40000000, 0)},
+}
+
+DEFAULT_ATTENUATION = (1, 40000, -40000)
+
+
+class BluetoothDecoder:
+	def __init__(self):
+		self.bufferValues = []
+		self.storedData = Queue()
+
+	def addNextByte(self, newData):
+		if newData:
+			code, meaning = self._decodeByte(newData)
+			if code == len(self.bufferValues):
+				self.bufferValues.append(meaning)
+			elif code != len(self.bufferValues) - 1 or self.bufferValues[code] != meaning:
+				self.bufferValues.clear()
+			if len(self.bufferValues) == 7:
+				self._updateAll()
+				self.bufferValues.clear()
+
+	@staticmethod
+	def _decodeByte(byte: bytearray):
+		data = int.from_bytes(byte, 'big')
+		return data >> 4, data & 15
+
+	def _getValue(self):
+		value = 0
+		digits = self.bufferValues[1:6]
+		digits.reverse()
+		for i, digit in enumerate(digits):
+			value += digit * (10 ** i)
+		value -= 100000 if value > 50000 else 0
+		return value
+
+	def getNextPoint(self):
+		if not self.storedData.empty():
+			return self.storedData.get()
+
+	def _updateAll(self):
+		mode = MODES[self.bufferValues[0]]
+		attenuation = ATTENUATION.get(self.bufferValues[6], DEFAULT_ATTENUATION).get(mode, DEFAULT_ATTENUATION)
+		value = self._getValue()
+		value = value / attenuation[0]
+		self.storedData.put({
+			"type": mode,
+			"max_y": attenuation[1],
+			"min_y": attenuation[2],
+			"value": value,
+		})

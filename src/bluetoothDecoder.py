@@ -52,8 +52,9 @@ class BluetoothDecoder:
 		return value
 
 	def getNextPoint(self):
-		if not self.storedData.empty():
-			return self.storedData.get()
+		if self.storedData.empty():
+			return None
+		return self.storedData.get()
 
 	def _updateAll(self):
 		mode = MODES[self.bufferValues[0]]

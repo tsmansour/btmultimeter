@@ -10,12 +10,12 @@ MODES = {
 
 # Add dividers and max/min when available here
 ATTENUATION = {
-	0: {'Voltmeter': (100000, 0.4, -0.4), 'Ohmmeter': (100, 400, 0)},
-	1: {'Voltmeter': (10000, 4.0, -4.0), 'Ohmmeter': (10, 4000, 0)},
-	2: {'Voltmeter': (1000, 40, -40), 'Ohmmeter': (1, 40000, 0)},
-	3: {'Voltmeter': (100, 400, -400), 'Ohmmeter': (0.1, 400000, 0)},
-	4: {'Voltmeter': (10, 4000, -4000), 'Ohmmeter': (0.01, 4000000, 0)},
-	5: {'Voltmeter': (1, 40000, -40000), 'Ohmmeter': (0.001, 40000000, 0)},
+	0: {'Voltmeter': (0.00001, 0.4, -0.4), 'Ohmmeter': (.001, 400, 0)},
+	1: {'Voltmeter': (0.0001, 4.0, -4.0), 'Ohmmeter': (0.1, 4000, 0)},
+	2: {'Voltmeter': (0.001, 40, -40), 'Ohmmeter': (1, 40000, 0)},
+	3: {'Voltmeter': (0.01, 400, -400), 'Ohmmeter': (10, 400000, 0)},
+	4: {'Voltmeter': (0.1, 4000, -4000), 'Ohmmeter': (100, 4000000, 0)},
+	5: {'Voltmeter': (1, 40000, -40000), 'Ohmmeter': (1000, 40000000, 0)},
 }
 
 DEFAULT_ATTENUATION = (1, 40000, -40000)
@@ -60,7 +60,7 @@ class BluetoothDecoder:
 		mode = MODES[self.bufferValues[0]]
 		attenuation = ATTENUATION.get(self.bufferValues[6], DEFAULT_ATTENUATION).get(mode, DEFAULT_ATTENUATION)
 		value = self._getValue()
-		value = value / attenuation[0]
+		value = value * attenuation[0]
 		self.storedData.put({
 			"type": mode,
 			"max_y": attenuation[1],

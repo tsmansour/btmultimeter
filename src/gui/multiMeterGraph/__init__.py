@@ -1,6 +1,9 @@
 
+from fileinput import filename
 import os
 from pathlib import Path
+from types import new_class
+
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
@@ -15,6 +18,8 @@ from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
 from graph import Graph, MeshLinePlot, PointPlot, VBar
+import json
+#from multiMeterGui import swap_main
 
 
 class SaveButtonWithDropdown(Button):
@@ -22,6 +27,8 @@ class SaveButtonWithDropdown(Button):
     def __init__(self, assigned_graph, **kwargs):
         super().__init__(**kwargs)
         self.text = "Save As"
+        self.background_normal = ''
+        self.background_color = rgb("#33B5E5")
         self.dropdown = DropDown()
         self.size_hint_x = 0.30
         btnSaveImage = Button(text='PNG', size_hint_y=None)
@@ -57,11 +64,24 @@ class SaveButtonWithDropdown(Button):
             'ymin': str(self.assignedGraph.ymin),
             'ymax': str(self.assignedGraph.ymax),
             'points': list(self.assignedGraph.plot.points),
+            'profile': [self.assignedGraph.xmax, 
+                            self.assignedGraph.xmin, 
+                            self.assignedGraph.ymin, 
+                            self.assignedGraph.ymax,
+                            self.assignedGraph.xlabel,
+                            self.assignedGraph.ylabel,
+                            self.assignedGraph.background_color,
+                            self.assignedGraph.plot.color,
+                            self.assignedGraph.vbar.color,
+                            self.assignedGraph.tick_color,
+                            self.assignedGraph.border_color,
+                            self.assignedGraph.plot_points.color,
+                            self.assignedGraph.input_type]
         }
 
         def writeto(c):
             with open(c, 'w') as f:
-                f.write(str(data))
+                json.dump(data, f)
 
         self.dropdown.dismiss()
         self.fileType = '.graph'
@@ -147,7 +167,7 @@ class GraphWidget(Graph):
         self.ylog = False
         self.x_grid = True
         self.y_grid = True
-        self.label_options = {'color': rgb('444444'), 'bold': True}
+        self.label_options = {'color': rgb('C0C0C0'), 'bold': True}
         self.currentTime = 0
         self.evenTrigger = self._getNewEventTrigger()
         self.bind(on_touch_up=self._touch_up)
@@ -230,7 +250,7 @@ class GraphWidget(Graph):
         if len(self.plot_points.points):
             self.point_label.disabled = False
             self.point_label.pos = self.graph_pos_to_window_pos(*self.plot_points.points[0])
-        self.queue.addToeQueue(value, self.currentTime)
+        self.queue.addToQueue(value, self.currentTime)
         self.currentTime = time
 
     def update_points(self, *args):
@@ -249,6 +269,7 @@ class GraphTopRow(BoxLayout):
         self.add_widget(self.graphTitle)
         self.add_widget(self.recordButton)
         self.add_widget(self.saveDropdown)
+        self.padding = 0
 
     def bindPress(self, function):
         self.recordButton.bind(on_press=function)
@@ -280,7 +301,7 @@ class GraphProfile:
     ymax = 140
     xlabel = 'Time (s)'
     ylabel = 'Volts (Vrms)'
-    backgroundColor = rgb('ffffffff')
+    backgroundColor = rgb('#585858')
     plotline_Color = rgb('ff0000')
     vbar_color = rgb('5e34eb')
     tick_color = rgb('b8c6db')
@@ -291,6 +312,7 @@ class GraphProfile:
     save_to_image_name = './save/graphImage'
     save_to_file_name = './save/graphData'
     plot_points_color = rgb('000000')
+    input_type = "Voltage"
 
 
 class GraphLayout(GridLayout):
@@ -327,6 +349,7 @@ class GraphLayout(GridLayout):
         self.graph.tick_color = self.graphProfile.tick_color
         self.graph.border_color = self.graphProfile.border_color
         self.graph.plot_points.color = self.graphProfile.plot_points_color
+        self.graph.input_type = self.graphProfile.input_type
 
     iconsIterator = iter(['assets/start.png', 'assets/stop.png', 'assets/skip-back.png'])
 
@@ -351,13 +374,84 @@ class GraphLayout(GridLayout):
             self.graph.add_point(value, time)
 
 
+
+    @staticmethod
+    def popUpLoad(new_button, menu):
+        popup = Popup(title=f'Choose file Location:', auto_dismiss=True,
+                           size_hint=(None, None), size=(Window.width * 0.7, Window.height * 0.7))
+        layout = GridLayout()
+        layout.rows = 2
+        fc = FileChooserListView(path=str(Path.home()))
+        layout.add_widget(fc, 1)
+        bottom = GridLayout(cols=3, size_hint_y=0.1)
+
+        btnOk = Button(text="OK", size_hint_x=0.15, size_hint_max_y=50)
+        btnOk.bind(on_release= lambda x: GraphLayout.getTableFromFile(fc.selection, new_button, menu, popup))
+        
+        #input_save_text = PathInput(btnOk)
+        btnCancel = Button(text="Cancel", size_hint_x=0.15, size_hint_max_y=None, on_press=popup.dismiss)
+        #bottom.add_widget(input_save_text)
+        bottom.add_widget(btnOk)
+        bottom.add_widget(btnCancel)
+        layout.add_widget(bottom)
+        popup.content = layout
+        print(fc.path)
+        popup.open()
+
+
+    
+
+    @staticmethod
+    def getTableFromFile(path, new_button, menu, popup):
+        split = path[0].split('\\')
+        print(split)
+        path = split[0]
+        for element in split[1:]:
+            path += '/' + element 
+        print(path)
+        data = {}
+        if os.path.exists(path):
+            with open(path, 'r') as inFile:
+                data = dict(json.load(inFile))
+        newProfile = GraphProfile()
+        newProfile.xmax = data["profile"][0]
+        newProfile.xmin = data["profile"][1]
+        newProfile.ymin = data["profile"][2]
+        newProfile.ymax = data["profile"][3]
+        newProfile.xlabel = data["profile"][4]
+        newProfile.ylabel = data["profile"][5]
+        newProfile.backgroundColor = data["profile"][6]
+        newProfile.plotline_Color = data["profile"][7]
+        newProfile.vbar_color = data["profile"][8]
+        newProfile.tick_color = data["profile"][9]
+        newProfile.border_color = data["profile"][10]
+        newProfile.plot_points_color = data["profile"][11]
+        newProfile.input_type = data["profile"][12]
+        thisGraph = GraphLayout(newProfile)
+        thisGraph.graph.plot.points = data["points"]
+
+        new_button.graph = thisGraph
+        new_button.halign = "center"
+        new_button.background_color = rgb("#33B5E5")
+        new_button.selected = False
+        new_button.graph.padding = 3
+        new_button.text = newProfile.input_type + "\n" + "(" + split[-1] + ")"
+        #new_button.input_type = newProfile.input_type
+
+        menu.add_widget(new_button)
+        
+        #swap_main(new_button)
+
+        popup.dismiss()
+        return
+
 class myQueue:
 
     def __init__(self, size):
         self.queue = []
         self.size = size
 
-    def addToeQueue(self, newValue, time):
+    def addToQueue(self, newValue, time):
         if len(self.queue) > self.size:
             self.queue.pop()
         self.queue.insert(0, (time, newValue))

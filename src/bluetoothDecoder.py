@@ -75,7 +75,6 @@ import random
 def fakeBluetooth():
 	count = 0
 	while True:
-		print(f'{count}')
 		x = bytearray()
 		if count == 0:
 			x.append(2)

@@ -84,7 +84,10 @@ def notification_handler(sender, data):
 
 def getDeviceAddress():
     asyncio.run(scanForDevices())
-    choice = input("Enter desired device: ")
+    choice = 'r'
+    while choice == 'r':
+        print(devicesList)
+        choice = input("Enter desired device: ")
     if platform == "Darwin":
         return devicesList[int(choice)].metadata["uuids"]
     return devicesList[int(choice)].address

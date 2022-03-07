@@ -22,9 +22,12 @@ DEFAULT_ATTENUATION = (1, 40000, -40000)
 
 
 class BluetoothDecoder:
-	def __init__(self):
+	def __init__(self, fake=False):
 		self.bufferValues = []
 		self.storedData = Queue()
+		if fake:
+			self.fake = fake
+			self.fakegen = self._fakeGenerator(10)
 
 	def addNextByte(self, newData):
 		if newData:
@@ -52,6 +55,8 @@ class BluetoothDecoder:
 		return value
 
 	def getNextPoint(self):
+		if self.fake:
+			return self.fakegen
 		if self.storedData.empty():
 			return None
 		return self.storedData.get_nowait()
@@ -69,26 +74,17 @@ class BluetoothDecoder:
 			"value": value,
 		})
 
-
-import random
-
-def fakeBluetooth():
-	count = 0
-	while True:
-		x = bytearray()
-		if count == 0:
-			x.append(2)
-		elif count == 6:
-			x.append((count<<4) + 2)
-		else:
-			testpoint = random.randint(0, 4)
-			testpoint = (count << 4) + testpoint
-			x.append(testpoint)
-		if count == 6:
-			count = 0
-		else:
-			count += 1
-		yield x
-
-# x = fakeBluetooth()
-# next(x)
+	def _fakeGenerator(self, starting_at):
+		from random import randint
+		current = starting_at
+		while True:
+			x = {
+				"type": 'Voltmeter',
+				"max_y": 40,
+				"min_y": -40,
+				"value": current,
+			}
+			y = current + randint(-1,1)
+			if -40 < y < 40:
+				current = y
+			yield x

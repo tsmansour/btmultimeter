@@ -1,5 +1,6 @@
 
 import os
+import json
 from pathlib import Path
 
 from kivy.uix.boxlayout import BoxLayout
@@ -15,6 +16,8 @@ from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
 from graph import Graph, MeshLinePlot, PointPlot, VBar
+
+
 
 
 class SaveButtonWithDropdown(Button):
@@ -52,16 +55,17 @@ class SaveButtonWithDropdown(Button):
     def selectSaveData(self, *args):
         data = {
             'title': str(self.parent.getTitle()),
+            'type': str('missingType'),
             'xmin': str(self.assignedGraph.xmin),
             'xmax': str(self.assignedGraph.xmax),
             'ymin': str(self.assignedGraph.ymin),
             'ymax': str(self.assignedGraph.ymax),
-            'points': list(self.assignedGraph.plot.points),
+            'mesh_points': list(self.assignedGraph.plot.points),
         }
 
         def writeto(c):
             with open(c, 'w') as f:
-                f.write(str(data))
+                json.dump(data, f)
 
         self.dropdown.dismiss()
         self.fileType = '.graph'
@@ -349,6 +353,15 @@ class GraphLayout(GridLayout):
     def addpoint(self, value, time):
         if self.state_record == 1:
             self.graph.add_point(value, time)
+
+    @staticmethod
+    def getTableFormFile(path):
+        data = {}
+        if os.path.exists(path):
+            with open(path, 'r') as inFile:
+                data = dict(json.load(inFile))
+        thisGraph = GraphLayout()
+        return data
 
 
 class myQueue:

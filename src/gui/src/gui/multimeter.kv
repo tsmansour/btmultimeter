@@ -1,0 +1,19 @@
+#:kivy 1.0.9
+
+<ModeButton>:
+    size: 50, 50
+    Button:
+        size: self.size
+        pos: self.pos
+        title: "Hello"
+
+<ModeSelectList>:
+    viewclass: 'Button'
+    RecycleBoxLayout:
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+
+
+<MainLayout>:
+

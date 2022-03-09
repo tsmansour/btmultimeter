@@ -2,6 +2,7 @@
 import os
 import json
 from pathlib import Path
+from time import time as nowTime
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
@@ -15,9 +16,7 @@ from kivy.uix.dropdown import DropDown
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
-from graph import Graph, MeshLinePlot, PointPlot, VBar
-
-
+from src.gui.graph import Graph, MeshLinePlot, PointPlot, VBar
 
 
 class SaveButtonWithDropdown(Button):
@@ -153,6 +152,7 @@ class GraphWidget(Graph):
         self.y_grid = True
         self.label_options = {'color': rgb('444444'), 'bold': True}
         self.currentTime = 0
+        self.lastClockTime = None
         self.evenTrigger = self._getNewEventTrigger()
         self.bind(on_touch_up=self._touch_up)
 
@@ -211,6 +211,7 @@ class GraphWidget(Graph):
         return x_out, y_out
 
     def startClock(self):
+        self.lastClockTime = nowTime()
         self.evenTrigger()
 
     def stopClock(self):
@@ -226,8 +227,9 @@ class GraphWidget(Graph):
         self.point_label.disabled = True
         self.vbar.points = []
 
-    def add_point(self, value, timeDif):
-        time = self.currentTime + timeDif
+    def add_point(self, value):
+        now = nowTime()
+        time = now - self.lastClockTime + self.currentTime
         if time > self.xmax:
             self.xmax += 5
             self.xmin += 5
@@ -236,6 +238,7 @@ class GraphWidget(Graph):
             self.point_label.pos = self.graph_pos_to_window_pos(*self.plot_points.points[0])
         self.queue.addToeQueue(value, self.currentTime)
         self.currentTime = time
+        self.lastClockTime = now
 
     def update_points(self, *args):
         self.plot.points = self.queue.get()
@@ -350,9 +353,9 @@ class GraphLayout(GridLayout):
             self.graph.reset()
             args[0].text = 'START'
 
-    def addpoint(self, value, time):
+    def addpoint(self, value):
         if self.state_record == 1:
-            self.graph.add_point(value, time)
+            self.graph.add_point(value)
 
     @staticmethod
     def getTableFormFile(path):

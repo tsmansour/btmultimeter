@@ -1,22 +1,20 @@
 # https://bleak.readthedocs.io/en/latest/
 # Installation: "pip install bleak"
-from src.bluetoothDecoder import BluetoothDecoder
 import asyncio
 from bleak import BleakScanner, BleakClient
 from bleak.exc import BleakError
 from sys import platform
 
-ble_obj = BluetoothDecoder()
 devicesList = []
-if platform != "Darwin":
+ble_obj = None
+if platform != "darwin":
     address = "00:A0:50:BA:C5:81"
 else:
     address = "804f806f-a7e0-408c-83ca-4a2cfe1d5d51"
-UUID = "804f806f-a7e0-408c-83ca-4a2cfe1d5d51"
 #UUID = "00001801-0000-1000-8000-00805f9b34fb"
 #UUID = "00001800-0000-1000-8000-00805f9b34fb
 #UUID = "00002a24-0000-1000-8000-00805f9b34fb"
-
+UUID = "804f806f-a7e0-408c-83ca-4a2cfe1d5d51"
 async def scanForDevices() -> None:
     devices = await BleakScanner.discover()
     i=0
@@ -65,7 +63,7 @@ async def connectAndGetData(addr, char_uuid):
         print(f"Connected: {client.is_connected}")
 
         await client.start_notify(char_uuid, notification_handler)
-        await asyncio.sleep(50.0)
+        await asyncio.sleep(100.0)
         await client.stop_notify(char_uuid)
 
 def notification_handler(sender, data):
@@ -82,25 +80,12 @@ def notification_handler(sender, data):
 
     ble_obj.addNextByte(bytes(data))
 
-def getDeviceAddress():
+def startBluetoothConnection(decoder):
+    ble_obj = decoder
     asyncio.run(scanForDevices())
-    choice = 'r'
-    while choice == 'r':
-        print(devicesList)
-        choice = input("Enter desired device: ")
-    if platform == "Darwin":
-        return devicesList[int(choice)].metadata["uuids"]
-    return devicesList[int(choice)].address
-
-if __name__ == "__main__":
-#    address = getDeviceAddress()
     print("Address: ", address)
     print("UUID: ", UUID)
     #asyncio.run(getModel(address))
     #asyncio.run(connectAndReadServices(address))
     #asyncio.run(connectAndReadCharacteristics(address))
     asyncio.run(connectAndGetData(address,UUID))
-    for i in range(10):
-        print(ble_obj.getNextPoint())
-        # SW2 = mode change
-        # Light -> Volt -> Amm -> Ohm -> Temp

@@ -9,7 +9,6 @@ from kivy.uix.button import Button
 from kivy.animation import Animation
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.dropdown import DropDown
-from kivy.uix.recycleview import RecycleView
 from kivy.clock import Clock
 from multiMeterGraph import GraphLayout
 from multiMeterGraph import GraphProfile
@@ -291,6 +290,7 @@ class MutliMeterApp(BoxLayout):
 		self.add_widget(center_layout)
 
 		swap_main(left_menu.current_button)
+
 
 	def fakeData(self, *args):
 		global testpoint

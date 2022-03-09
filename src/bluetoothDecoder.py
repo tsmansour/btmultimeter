@@ -25,8 +25,8 @@ class BluetoothDecoder:
 	def __init__(self, fake=False):
 		self.bufferValues = []
 		self.storedData = Queue()
+		self.fake = fake
 		if fake:
-			self.fake = fake
 			self.fakegen = self._fakeGenerator(10)
 
 	def addNextByte(self, newData):

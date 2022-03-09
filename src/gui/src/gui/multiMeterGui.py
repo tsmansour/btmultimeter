@@ -12,18 +12,41 @@ from multiMeterGraph import GraphLayout
 from multiMeterGraph import GraphProfile
 import random
 from kivy.core.window import Window
+
 from kivy.utils import get_color_from_hex as rgb
-import threading
 
 ModeButtonsOptions = ['V~', 'V=', 'A', 'Ω', 'C/F', 'Light', '+']
 
 testpoint = 80
-FAKE_DECODER = False
+
 
 # Starting Environment
 # kivy_venv\Scripts\activate
 # cd ECS193Project\btmultimeter\src\gui
 # python MultiMeterGUI.py
+
+
+def fakeBluetooth():
+	count = 0
+	while True:
+		#print(f'{count}')
+		x = bytearray()
+		if count == 0:
+			x.append(2)
+		elif count == 6:
+			x.append((count<<4) + 2)
+		else:
+			testpoint = random.randint(0, 4)
+			testpoint = (count << 4) + testpoint
+			x.append(testpoint)
+		if count == 6:
+			count = 0
+		else:
+			count += 1
+		yield x
+
+x = fakeBluetooth()
+
 
 class ModeButton(Widget):
 
@@ -118,14 +141,14 @@ def swap_main(self):
 		child.color = (1, 1, 1, 1)
 		child.selected = False
 
-	main_layout_top_bar.input_type_button.text = self.graph.graphProfile.input_type
+	main_layout_top_bar.children[2].text = self.graph.graphProfile.input_type
 	self.background_color = rgb('079163')
 	self.color = (1, 1, 1, 1)
 	self.selected = True
 	if self.btn_number == 1:
-		main_layout_top_bar.remove_button.text = "Delete Recording"
+		main_layout_top_bar.children[1].text = "Delete Recording"
 	else:
-		main_layout_top_bar.remove_button.text = "Remove"
+		main_layout_top_bar.children[1].text = "Remove"
 
 	total_layout.current_graph = self.graph
 
@@ -210,18 +233,16 @@ class CenterLayout(BoxLayout):
 		super(CenterLayout, self).__init__(**kwargs)
 		self.padding = 3
 
-		self.top_menu = StackLayout(size_hint=(1, 0.105))
-
-		self.top_menu.input_type_button = Button(text="Input Type", size_hint=(0.2, 1), background_normal='',
+		input_type_button = Button(text="Input Type", size_hint=(0.2, 1), background_normal='',
 		                       background_color=rgb("#33B5E5"), disabled = True, background_disabled_normal = "")
 
-		self.top_menu.remove_button = Button(text="Delete Recording", size_hint=(0.2, 1), background_normal='',
+		remove_button = Button(text="Delete Recording", size_hint=(0.2, 1), background_normal='',
 		                       background_color=rgb("#33B5E5"))
-		self.top_menu.remove_button.bind(on_press=delete_button)
+		remove_button.bind(on_press=delete_button)
 
-		self.top_menu.settings_button = Button(text="Settings", size_hint=(0.2, 1), background_normal='',
+		settings_button = Button(text="Settings", size_hint=(0.2, 1), background_normal='',
 		                         background_color=rgb("#33B5E5"))
-		self.top_menu.settings_button.bind(on_press=display_settings)
+		settings_button.bind(on_press=display_settings)
 
 		# config = ConfigParser()
 		# config.read('myconfig.ini')
@@ -229,14 +250,14 @@ class CenterLayout(BoxLayout):
 		# settings_button.settings.add_json_panel('My custom panel', config, 'app_settings.json')
 		# s.add_json_panel('Another panel', config, 'settings_test2.json')
 
-		
-		self.top_menu.spacing = 3
+		top_menu = StackLayout(size_hint=(1, 0.105))
+		top_menu.spacing = 3
 		# top_menu.padding = 3
-		self.top_menu.add_widget(self.top_menu.input_type_button)
-		self.top_menu.add_widget(self.top_menu.remove_button)
-		#top_menu.add_widget(top_menu.settings_button)
+		top_menu.add_widget(input_type_button)
+		top_menu.add_widget(remove_button)
+		top_menu.add_widget(settings_button)
 
-		self.add_widget(self.top_menu)
+		self.add_widget(top_menu)
 
 
 class MutliMeterApp(BoxLayout):
@@ -244,35 +265,37 @@ class MutliMeterApp(BoxLayout):
 	def __init__(self, **kwargs):
 		super(MutliMeterApp, self).__init__(**kwargs)
 		self.orientation = 'horizontal'
-		self.left_menu = LeftMenu(orientation='vertical', size_hint=(0.2, 1))
+		left_menu = LeftMenu(orientation='vertical', size_hint=(0.2, 1))
 
-		self.add_widget(self.left_menu, 0)
+		self.add_widget(left_menu, 0)
 
-		self.center_layout = CenterLayout(orientation='vertical', size_hint=(1, 1))
+		center_layout = CenterLayout(orientation='vertical', size_hint=(1, 1))
 
 		main_display = Button(text='Layout 0', size_hint=(1, 0.9))
-		self.center_layout.add_widget(main_display)
-		self.add_widget(self.center_layout)
-		self.decoder = BluetoothDecoder(fake=FAKE_DECODER)
+		center_layout.add_widget(main_display)
+		self.add_widget(center_layout)
+		self.decoder = BluetoothDecoder()
 		self.multimeter_graph = self.children[1].multimeter_graph
 		self.queue = self.multimeter_graph.graph.queue
 		
+		Clock.schedule_interval(self.getFakeBytes, 1 / 100)
 		Clock.schedule_interval(self.sendDataToQueue, 1 / 10)
 		Clock.schedule_interval(self.add_to_graph, 1 / 10)
-		swap_main(self.left_menu.current_button)
-		x = threading.Thread(target=startBluetoothConnection, args=(self.decoder,))
-		x.start()
+		swap_main(left_menu.current_button)
 		#startBluetoothConnection(self.decoder)
+
+	def fakeData(self, *args):
+		global testpoint
+		testpoint += random.choice([-1, 1]) * random.random()
+		self.queue.addpoint(testpoint, args[0])
+
+	def getFakeBytes(self, *args):
+		self.decoder.addNextByte(next(x))
+		return
 
 	def	sendDataToQueue(self, *args):
 		nextData = self.decoder.getNextPoint()
 		if nextData:
-			print(nextData)
-			self.center_layout.top_menu.input_type_button.text = nextData["type"]
-			if self.multimeter_graph.graphProfile.ymax < nextData["max_y"]:
-				self.multimeter_graph.graphProfile.ymax = nextData["max_y"]
-			if self.multimeter_graph.graphProfile.ymin > nextData["min_y"]:
-				self.multimeter_graph.graphProfile.ymin = nextData["min_y"]
 			self.multimeter_graph.addpoint(nextData["value"], args[0])
 		return
 

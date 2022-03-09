@@ -263,16 +263,13 @@ class GraphTopRow(BoxLayout):
         self.orientation = "horizontal"
         self.size_hint_y = .05
         self.recordButton = Button(text='START')
-        self.recordButton.background_color = rgb("#33B5E5")
-        self.recordButton.background_normal = ""
-        #self.recordButton.background_normal = 'assets/start.png'
+        self.recordButton.background_normal = 'assets/start.png'
         self.saveDropdown = SaveButtonWithDropdown(assigned_graph=assignedGraph)
         self.graphTitle = GraphTitleInput()
         self.add_widget(self.graphTitle)
         self.add_widget(self.recordButton)
         self.add_widget(self.saveDropdown)
         self.padding = 0
-        self.spacing = 3
 
     def bindPress(self, function):
         self.recordButton.bind(on_press=function)
@@ -301,7 +298,7 @@ class GraphProfile:
     xmax = 10.0
     xmin = 0
     ymin = 0
-    ymax = 0.4
+    ymax = 140
     xlabel = 'Time (s)'
     ylabel = 'Volts (Vrms)'
     backgroundColor = rgb('#585858')
@@ -334,12 +331,12 @@ class GraphLayout(GridLayout):
         self.add_widget(self.topRow)
         self.add_widget(self.graph)
         self.graphProfile.assignedGraph = self
-        Clock.schedule_interval(self.updatetoLatestGraphProfile, 1 / 10)
+        self.updatetoLatestGraphProfile()
 
     def getGraphTitle(self):
         return str(self.topRow.graphTitle.getTitle())
 
-    def updatetoLatestGraphProfile(self, *args):
+    def updatetoLatestGraphProfile(self):
         self.graph.ymax = self.graphProfile.ymax
         self.graph.ymin = self.graphProfile.ymin
         self.graph.xmin = self.graphProfile.xmin
@@ -353,7 +350,6 @@ class GraphLayout(GridLayout):
         self.graph.border_color = self.graphProfile.border_color
         self.graph.plot_points.color = self.graphProfile.plot_points_color
         self.graph.input_type = self.graphProfile.input_type
-        self.graph.y_ticks_major = (self.graph.ymax - self.graph.ymin)/8
 
     iconsIterator = iter(['assets/start.png', 'assets/stop.png', 'assets/skip-back.png'])
 
@@ -440,14 +436,6 @@ class GraphLayout(GridLayout):
         new_button.selected = False
         new_button.graph.padding = 3
         new_button.text = newProfile.input_type + "\n" + "(" + split[-1] + ")"
-        new_button.graph.topRow.recordButton.background_normal = ''
-        new_button.graph.topRow.recordButton.text = ''
-        new_button.graph.topRow.recordButton.background_color = rgb("000000")
-        new_button.graph.topRow.recordButton.disabled = True
-        new_button.graph.topRow.saveDropdown.background_normal = ''
-        new_button.graph.topRow.saveDropdown.text = ''
-        new_button.graph.topRow.saveDropdown.background_color = rgb("000000")
-        new_button.graph.topRow.saveDropdown.unbind(on_press=new_button.graph.topRow.saveDropdown.buttonRelease)
         #new_button.input_type = newProfile.input_type
 
         menu.add_widget(new_button)

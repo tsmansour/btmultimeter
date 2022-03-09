@@ -24,7 +24,7 @@ class DigitalLayout(GridLayout):
 
 		self.isPaused = False
 
-	def addpoint(self, newValue):
+	def addpoint(self, newValue, *args):
 		if not self.isPaused:
 			self.largeNumberDisplay.updateDisplay(newValue)
 			self.topRow.updateValues(newValue)

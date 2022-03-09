@@ -76,7 +76,8 @@ class SaveButtonWithDropdown(Button):
                             self.assignedGraph.tick_color,
                             self.assignedGraph.border_color,
                             self.assignedGraph.plot_points.color,
-                            self.assignedGraph.input_type]
+                            self.assignedGraph.input_type,
+                            self.assignedGraph.title]
         }
 
         def writeto(c):
@@ -236,6 +237,8 @@ class GraphWidget(Graph):
         self.currentTime = 0
         self.xmax = 10
         self.xmin = 0
+        self.ymax = 0.4
+        self.ymin = 0
         self.queue.clear()
         self.plot.points = []
         self.plot_points.points = []
@@ -301,7 +304,7 @@ class GraphProfile:
     xmax = 10.0
     xmin = 0
     ymin = 0
-    ymax = 140
+    ymax = 0.4
     xlabel = 'Time (s)'
     ylabel = 'Volts (Vrms)'
     backgroundColor = rgb('#585858')
@@ -353,6 +356,8 @@ class GraphLayout(GridLayout):
         self.graph.border_color = self.graphProfile.border_color
         self.graph.plot_points.color = self.graphProfile.plot_points_color
         self.graph.input_type = self.graphProfile.input_type
+        self.graph.y_ticks_major = (self.graph.ymax - self.graph.ymin)/8
+        self.graph.title = self.getGraphTitle()
 
     iconsIterator = iter(['assets/start.png', 'assets/stop.png', 'assets/skip-back.png'])
 
@@ -430,15 +435,19 @@ class GraphLayout(GridLayout):
         newProfile.border_color = data["profile"][10]
         newProfile.plot_points_color = data["profile"][11]
         newProfile.input_type = data["profile"][12]
+        newProfile.title = data["profile"][13]
         thisGraph = GraphLayout(newProfile)
         thisGraph.graph.plot.points = data["points"]
 
         new_button.graph = thisGraph
+        new_button.selected_display = new_button.graph
         new_button.halign = "center"
         new_button.background_color = rgb("#33B5E5")
         new_button.selected = False
         new_button.graph.padding = 3
         new_button.text = newProfile.input_type + "\n" + "(" + split[-1] + ")"
+        print(newProfile.title)
+        new_button.graph.topRow.graphTitle.title_input.text = newProfile.title
         new_button.graph.topRow.recordButton.background_normal = ''
         new_button.graph.topRow.recordButton.text = ''
         new_button.graph.topRow.recordButton.background_color = rgb("000000")

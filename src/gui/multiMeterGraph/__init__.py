@@ -263,13 +263,16 @@ class GraphTopRow(BoxLayout):
         self.orientation = "horizontal"
         self.size_hint_y = .05
         self.recordButton = Button(text='START')
-        self.recordButton.background_normal = 'assets/start.png'
+        self.recordButton.background_color = rgb("#33B5E5")
+        self.recordButton.background_normal = ""
+        #self.recordButton.background_normal = 'assets/start.png'
         self.saveDropdown = SaveButtonWithDropdown(assigned_graph=assignedGraph)
         self.graphTitle = GraphTitleInput()
         self.add_widget(self.graphTitle)
         self.add_widget(self.recordButton)
         self.add_widget(self.saveDropdown)
         self.padding = 0
+        self.spacing = 3
 
     def bindPress(self, function):
         self.recordButton.bind(on_press=function)
@@ -331,12 +334,12 @@ class GraphLayout(GridLayout):
         self.add_widget(self.topRow)
         self.add_widget(self.graph)
         self.graphProfile.assignedGraph = self
-        self.updatetoLatestGraphProfile()
+        Clock.schedule_interval(self.updatetoLatestGraphProfile, 1 / 10)
 
     def getGraphTitle(self):
         return str(self.topRow.graphTitle.getTitle())
 
-    def updatetoLatestGraphProfile(self):
+    def updatetoLatestGraphProfile(self, *args):
         self.graph.ymax = self.graphProfile.ymax
         self.graph.ymin = self.graphProfile.ymin
         self.graph.xmin = self.graphProfile.xmin
@@ -436,6 +439,14 @@ class GraphLayout(GridLayout):
         new_button.selected = False
         new_button.graph.padding = 3
         new_button.text = newProfile.input_type + "\n" + "(" + split[-1] + ")"
+        new_button.graph.topRow.recordButton.background_normal = ''
+        new_button.graph.topRow.recordButton.text = ''
+        new_button.graph.topRow.recordButton.background_color = rgb("000000")
+        new_button.graph.topRow.recordButton.disabled = True
+        new_button.graph.topRow.saveDropdown.background_normal = ''
+        new_button.graph.topRow.saveDropdown.text = ''
+        new_button.graph.topRow.saveDropdown.background_color = rgb("000000")
+        new_button.graph.topRow.saveDropdown.unbind(on_press=new_button.graph.topRow.saveDropdown.buttonRelease)
         #new_button.input_type = newProfile.input_type
 
         menu.add_widget(new_button)

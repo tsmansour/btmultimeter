@@ -7,7 +7,7 @@ from sys import platform
 
 devicesList = []
 ble_obj = None
-if platform != "Darwin":
+if platform != "darwin":
     address = "00:A0:50:BA:C5:81"
 else:
     address = "804f806f-a7e0-408c-83ca-4a2cfe1d5d51"
@@ -83,12 +83,6 @@ def notification_handler(sender, data):
 def startBluetoothConnection(decoder):
     ble_obj = decoder
     asyncio.run(scanForDevices())
-    choice = input("Enter desired device: ")
-    address = devicesList[int(choice)].address
-    if platform == "Darwin":
-        address = devicesList[int(choice)].metadata["uuids"]
-    else:
-        address = devicesList[int(choice)].address
     print("Address: ", address)
     print("UUID: ", UUID)
     #asyncio.run(getModel(address))

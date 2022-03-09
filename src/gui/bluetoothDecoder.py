@@ -56,7 +56,7 @@ class BluetoothDecoder:
 
 	def getNextPoint(self):
 		if self.fake:
-			return next(self.fakegen)
+			return self.fakegen
 		if self.storedData.empty():
 			return None
 		return self.storedData.get_nowait()

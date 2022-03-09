@@ -3,6 +3,7 @@ from fileinput import filename
 import os
 from pathlib import Path
 from types import new_class
+from time import time as nowTime   ######## TODO
 
 
 from kivy.uix.boxlayout import BoxLayout
@@ -76,7 +77,8 @@ class SaveButtonWithDropdown(Button):
                             self.assignedGraph.tick_color,
                             self.assignedGraph.border_color,
                             self.assignedGraph.plot_points.color,
-                            self.assignedGraph.input_type]
+                            self.assignedGraph.input_type,
+                            self.assignedGraph.title]
         }
 
         def writeto(c):
@@ -155,6 +157,7 @@ class GraphWidget(Graph):
         self.plot_points = PointPlot(color=rgb('000000'))
         self.plot_points.point_size = 5
         self.add_plot(self.plot_points)
+        self.hasXValchanged = False
 
     def _selfConfig(self):
         self.x_ticks_minor = 1
@@ -169,6 +172,7 @@ class GraphWidget(Graph):
         self.y_grid = True
         self.label_options = {'color': rgb('C0C0C0'), 'bold': True}
         self.currentTime = 0
+        self.lastClockTime = None
         self.evenTrigger = self._getNewEventTrigger()
         self.bind(on_touch_up=self._touch_up)
 
@@ -227,6 +231,7 @@ class GraphWidget(Graph):
         return x_out, y_out
 
     def startClock(self):
+        self.lastClockTime = nowTime()
         self.evenTrigger()
 
     def stopClock(self):
@@ -236,15 +241,19 @@ class GraphWidget(Graph):
         self.currentTime = 0
         self.xmax = 10
         self.xmin = 0
+        self.ymax = 0.4
+        self.ymin = 0
         self.queue.clear()
         self.plot.points = []
         self.plot_points.points = []
         self.point_label.disabled = True
         self.vbar.points = []
 
-    def add_point(self, value, timeDif):
-        time = self.currentTime + timeDif
+    def add_point(self, value):
+        now = nowTime()
+        time = now - self.lastClockTime + self.currentTime
         if time > self.xmax:
+            self.hasXValchanged = True
             self.xmax += 5
             self.xmin += 5
         if len(self.plot_points.points):
@@ -252,6 +261,7 @@ class GraphWidget(Graph):
             self.point_label.pos = self.graph_pos_to_window_pos(*self.plot_points.points[0])
         self.queue.addToQueue(value, self.currentTime)
         self.currentTime = time
+        self.lastClockTime = now
 
     def update_points(self, *args):
         self.plot.points = self.queue.get()
@@ -342,8 +352,9 @@ class GraphLayout(GridLayout):
     def updatetoLatestGraphProfile(self, *args):
         self.graph.ymax = self.graphProfile.ymax
         self.graph.ymin = self.graphProfile.ymin
-        self.graph.xmin = self.graphProfile.xmin
-        self.graph.xmax = self.graphProfile.xmax
+        if self.graph.hasXValchanged == False:
+            self.graph.xmin = self.graphProfile.xmin
+            self.graph.xmax = self.graphProfile.xmax
         self.graph.xlabel = self.graphProfile.xlabel
         self.graph.ylabel = self.graphProfile.ylabel
         self.graph.background_color = self.graphProfile.backgroundColor
@@ -354,6 +365,7 @@ class GraphLayout(GridLayout):
         self.graph.plot_points.color = self.graphProfile.plot_points_color
         self.graph.input_type = self.graphProfile.input_type
         self.graph.y_ticks_major = (self.graph.ymax - self.graph.ymin)/8
+        self.graph.title = self.getGraphTitle()
 
     iconsIterator = iter(['assets/start.png', 'assets/stop.png', 'assets/skip-back.png'])
 
@@ -373,10 +385,9 @@ class GraphLayout(GridLayout):
             self.graph.reset()
             args[0].text = 'START'
 
-    def addpoint(self, value, time):
+    def addpoint(self, value):
         if self.state_record == 1:
-            self.graph.add_point(value, time)
-
+            self.graph.add_point(value)
 
 
     @staticmethod
@@ -431,15 +442,19 @@ class GraphLayout(GridLayout):
         newProfile.border_color = data["profile"][10]
         newProfile.plot_points_color = data["profile"][11]
         newProfile.input_type = data["profile"][12]
+        newProfile.title = data["profile"][13]
         thisGraph = GraphLayout(newProfile)
         thisGraph.graph.plot.points = data["points"]
 
         new_button.graph = thisGraph
+        new_button.selected_display = new_button.graph
         new_button.halign = "center"
         new_button.background_color = rgb("#33B5E5")
         new_button.selected = False
         new_button.graph.padding = 3
         new_button.text = newProfile.input_type + "\n" + "(" + split[-1] + ")"
+        print(newProfile.title)
+        new_button.graph.topRow.graphTitle.title_input.text = newProfile.title
         new_button.graph.topRow.recordButton.background_normal = ''
         new_button.graph.topRow.recordButton.text = ''
         new_button.graph.topRow.recordButton.background_color = rgb("000000")

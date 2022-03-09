@@ -12,7 +12,9 @@ from multiMeterGraph import GraphLayout
 from multiMeterGraph import GraphProfile
 import random
 from kivy.core.window import Window
+from kivy.uix.togglebutton import ToggleButton
 from kivy.utils import get_color_from_hex as rgb
+from digitalDisplay import DigitalLayout
 import threading
 
 ModeButtonsOptions = ['V~', 'V=', 'A', 'Ω', 'C/F', 'Light', '+']
@@ -36,43 +38,6 @@ class ModeButton(Widget):
 		button.color = "red"
 		button.text = kwargs.get('text')
 		self.add_widget(button)
-
-	def on_touch_down(self, touch):
-		# do action when pressed down
-		# print("pressed button")
-		return
-
-
-def display_voltage(self):
-	print("Displaying Voltage")
-	self.dropdown.select(self.text)
-	self.layout.parent.current_graph.ylabel = 'Volts (Vrms)'
-	return
-
-
-def display_current(self):
-	print("Displaying Current")
-	self.dropdown.select(self.text)
-	self.layout.parent.current_graph.ylabel = 'Current (A)'
-	return
-
-
-def display_resistance(self):
-	print("Displaying Resistance")
-	self.dropdown.select(self.text)
-	return
-
-
-def display_temp(self):
-	print("Displaying Temp")
-	self.dropdown.select(self.text)
-	return
-
-
-def display_light(self):
-	print("Displaying Light")
-	self.dropdown.select(self.text)
-	return
 
 
 def add_new_button(self):
@@ -103,17 +68,15 @@ def swap_main(self):
 	total_layout = self.parent.parent.parent.parent
 	main_layout = total_layout.children[0].children[0]
 	main_layout_top_bar = total_layout.children[0].children[1]
-	#print(main_layout_top_bar.children[1].text)
 
 	total_layout.children[0].remove_widget(main_layout)
-	new_layout = self.graph
+	new_layout = self.selected_display
+	#new_layout = self.digital_display
 
 	
-	# new_layout = Button(text='Layout ' + str(self.btn_number), size_hint = (1, 0.9))
 	total_layout.children[0].add_widget(new_layout)
 
 	for child in self.parent.children:
-		# child.background_color = (0.878, 0.878, 0.878, 1.0)
 		child.background_color = rgb("#33B5E5")
 		child.color = (1, 1, 1, 1)
 		child.selected = False
@@ -127,7 +90,7 @@ def swap_main(self):
 	else:
 		main_layout_top_bar.remove_button.text = "Remove"
 
-	total_layout.current_graph = self.graph
+	total_layout.current_graph = self.selected_display
 
 	return
 
@@ -190,11 +153,14 @@ class LeftMenu(BoxLayout):
 		btn1.bind(on_press=swap_main)
 		self.current_button = btn1
 		
-
+		self.multimeter_button = btn1
 		btn1.graph = GraphLayout(GraphProfile)
+		btn1.digital_display = DigitalLayout()
+		btn1.digital_display.padding = 3
+		btn1.selected_display = btn1.graph
 
 		btn1.graph.padding = 3
-		self.multimeter_graph = btn1.graph
+		self.multimeter_graph = btn1.selected_display
 		add_button_menu.add_button = Button(size_hint=(1, 1))
 		add_button_menu.add_button.text = '+'
 		add_button_menu.add_button.background_normal = ''
@@ -204,39 +170,64 @@ class LeftMenu(BoxLayout):
 		add_button_menu.add_widget(add_button_menu.add_button)
 		add_button_menu.add_button.bind(on_press=add_new_button)
 
+class CenterTopMenu(StackLayout):
+	def __init__(self, **kwargs):
+		super(CenterTopMenu, self).__init__(**kwargs)
+		self.spacing = 3
+
+		self.input_type_button = Button(text="Input Type", size_hint=(0.2, 1), background_normal='',
+		                       						background_color=rgb("#33B5E5"), disabled = True, background_disabled_normal = "",
+							   						color = rgb("ffffff"))
+
+
+		self.remove_button = Button(text="Delete Recording", size_hint=(0.2, 1), background_normal='',
+		                       					background_color=rgb("#33B5E5"))
+		self.remove_button.bind(on_press=delete_button)
+
+
+		self.settings_button = Button(text="", size_hint=(0.2, 1), background_normal='',
+		                         				background_color=rgb("#000000"), disabled = True)
+		self.settings_button.bind(on_press=display_settings)
+
+
+		self.display_selector = ToggleButton(text = "Display Mode",size_hint=(0.2, 1),background_normal='',
+		                         				background_color=rgb("#33B5E5"))
+		self.display_selector.bind(on_press = self.toggle_center_display)
+
+
+		self.quit_button = Button(text="Quit", size_hint=(0.2, 1), background_normal='',
+		                         			background_color=rgb("#33B5E5"))
+		self.quit_button.bind(on_press = display_settings)
+
+		self.add_widget(self.input_type_button)
+		self.add_widget(self.remove_button)
+		self.add_widget(self.display_selector)
+		self.add_widget(self.settings_button)
+		self.add_widget(self.quit_button)
+
+	def toggle_center_display(self, *args):
+		state = self.display_selector.state
+		multimeter_button = self.parent.parent.left_menu.multimeter_button
+		if state == 'down':
+			print("Button is Down")
+			multimeter_button.selected_display = self.parent.parent.left_menu.multimeter_button.digital_display
+		if state == 'normal':
+			print("Button is Up")
+			multimeter_button.selected_display = self.parent.parent.left_menu.multimeter_button.graph
+		swap_main(multimeter_button)
+
 
 class CenterLayout(BoxLayout):
 	def __init__(self, **kwargs):
 		super(CenterLayout, self).__init__(**kwargs)
 		self.padding = 3
 
-		self.top_menu = StackLayout(size_hint=(1, 0.105))
+		self.top_menu = CenterTopMenu(size_hint=(1, 0.105))
 
-		self.top_menu.input_type_button = Button(text="Input Type", size_hint=(0.2, 1), background_normal='',
-		                       background_color=rgb("#33B5E5"), disabled = True, background_disabled_normal = "")
-
-		self.top_menu.remove_button = Button(text="Delete Recording", size_hint=(0.2, 1), background_normal='',
-		                       background_color=rgb("#33B5E5"))
-		self.top_menu.remove_button.bind(on_press=delete_button)
-
-		self.top_menu.settings_button = Button(text="Settings", size_hint=(0.2, 1), background_normal='',
-		                         background_color=rgb("#33B5E5"))
-		self.top_menu.settings_button.bind(on_press=display_settings)
-
-		# config = ConfigParser()
-		# config.read('myconfig.ini')
-		# settings_button.settings = Settings()
-		# settings_button.settings.add_json_panel('My custom panel', config, 'app_settings.json')
-		# s.add_json_panel('Another panel', config, 'settings_test2.json')
-
-		
-		self.top_menu.spacing = 3
-		# top_menu.padding = 3
-		self.top_menu.add_widget(self.top_menu.input_type_button)
-		self.top_menu.add_widget(self.top_menu.remove_button)
-		#top_menu.add_widget(top_menu.settings_button)
 
 		self.add_widget(self.top_menu)
+
+	
 
 
 class MutliMeterApp(BoxLayout):
@@ -255,12 +246,13 @@ class MutliMeterApp(BoxLayout):
 		self.add_widget(self.center_layout)
 		self.decoder = BluetoothDecoder(fake=FAKE_DECODER)
 		self.multimeter_graph = self.children[1].multimeter_graph
+		self.multimeter_button = self.children[1].multimeter_button
 		self.queue = self.multimeter_graph.graph.queue
 		
 		Clock.schedule_interval(self.sendDataToQueue, 1 / 10)
 		Clock.schedule_interval(self.add_to_graph, 1 / 10)
 		swap_main(self.left_menu.current_button)
-		x = threading.Thread(target=startBluetoothConnection, args=(self.decoder,))
+		x = threading.Thread(target=startBluetoothConnection, args=(self.decoder,), daemon=True)
 		x.start()
 		#startBluetoothConnection(self.decoder)
 
@@ -268,17 +260,43 @@ class MutliMeterApp(BoxLayout):
 		nextData = self.decoder.getNextPoint()
 		if nextData:
 			print(nextData)
-			self.center_layout.top_menu.input_type_button.text = nextData["type"]
+			if self.center_layout.top_menu.input_type_button.text != nextData["type"]:
+				self.center_layout.top_menu.input_type_button.text = nextData["type"]
+				self.updateGraphTitles(nextData["type"])
+				self.multimeter_graph.graph.reset()
 			if self.multimeter_graph.graphProfile.ymax < nextData["max_y"]:
 				self.multimeter_graph.graphProfile.ymax = nextData["max_y"]
 			if self.multimeter_graph.graphProfile.ymin > nextData["min_y"]:
 				self.multimeter_graph.graphProfile.ymin = nextData["min_y"]
-			self.multimeter_graph.addpoint(nextData["value"], args[0])
-		return
+			self.multimeter_button.selected_display.addpoint(nextData["value"])
 
+
+	def updateGraphTitles(self, nextDataType):
+		if nextDataType == 'Voltmeter':
+			self.multimeter_graph.graphProfile.yLabel = "Volts (Vrms)"
+			self.multimeter_graph.graphProfile.ymin = 0
+			self.multimeter_graph.graphProfile.ymax = 0.4
+		if nextDataType == 'Ammeter':
+			self.multimeter_graph.graphProfile.yLabel = "Amps (A)"
+			self.multimeter_graph.graphProfile.ymin = 0
+			self.multimeter_graph.graphProfile.ymax = 0.4
+		if nextDataType == 'Ohmmeter':
+			self.multimeter_graph.graphProfile.yLabel = "Ohms (Ω)"
+			self.multimeter_graph.graphProfile.ymin = 0
+			self.multimeter_graph.graphProfile.ymax = 0.4
+		if nextDataType == 'Light Sensor':
+			self.multimeter_graph.graphProfile.yLabel = "Light Units"
+			self.multimeter_graph.graphProfile.ymin = 0
+			self.multimeter_graph.graphProfile.ymax = 0.4
+		if nextDataType == 'Temperature Sensor':
+			self.multimeter_graph.graphProfile.yLabel = "Temperature Units"
+			self.multimeter_graph.graphProfile.ymin = 0
+			self.multimeter_graph.graphProfile.ymax = 0.4
+		
+		
 	def add_to_graph(self, *args):
 		self.multimeter_graph.graph.update_points()
-		return
+
 
 
 class MultiMeterApp(App):

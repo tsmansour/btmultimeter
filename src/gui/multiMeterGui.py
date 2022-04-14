@@ -1,5 +1,5 @@
 from bluetoothDecoder import BluetoothDecoder
-from BLE_Windows_Mac import startBluetoothConnection
+from BLE_Windows_Mac import BLE
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
@@ -118,8 +118,9 @@ def display_settings(self):
 	#    content=self.settings,
 	#    size_hint=(None, None), si
 	# ze=(200, 200))
-	app = self.parent.parent.parent
-	app.open_settings()
+	bluetooth.disconnectFromDevice()
+	#app = self.parent.parent.parent
+	#app.open_settings()
 	return
 
 
@@ -252,7 +253,9 @@ class MutliMeterApp(BoxLayout):
 		Clock.schedule_interval(self.sendDataToQueue, 1 / 10)
 		Clock.schedule_interval(self.add_to_graph, 1 / 10)
 		swap_main(self.left_menu.current_button)
-		x = threading.Thread(target=startBluetoothConnection, args=(self.decoder,), daemon=True)
+		global bluetooth
+		bluetooth = BLE()
+		x = threading.Thread(target=bluetooth.startBluetoothConnection, args=(self.decoder,), daemon=True)
 		x.start()
 		#startBluetoothConnection(self.decoder)
 

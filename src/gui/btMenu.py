@@ -30,9 +30,8 @@ class DeviceCell(Button):
 
 		# Attempt to connect
 		bluetooth.address = self.device.address
-		#x=threading.Thread(target=bluetooth.startBluetoothConnection, args=(decoder,), daemon=True)
-		#x.start()
-		multiMeterGui.MultiMeterApp().run()
+		x=threading.Thread(target=bluetooth.startBluetoothConnection, args=(decoder,), daemon=True)
+		x.start()
 		asyncio.run(bluetooth.connectAndGetData())
 
 		# if connection success
@@ -45,6 +44,7 @@ class DeviceCell(Button):
 			# If device not on Mydevice list Add to list
 
 			# Start BlueTooth
+			multiMeterGui.MultiMeterApp().run()
 
 		# if connection failed
 

@@ -19,6 +19,7 @@ import threading
 
 ModeButtonsOptions = ['V~', 'V=', 'A', 'Ω', 'C/F', 'Light', '+']
 
+bluetooth = BLE()
 testpoint = 80
 FAKE_DECODER = False
 
@@ -253,8 +254,8 @@ class MutliMeterApp(BoxLayout):
 		Clock.schedule_interval(self.sendDataToQueue, 1 / 10)
 		Clock.schedule_interval(self.add_to_graph, 1 / 10)
 		swap_main(self.left_menu.current_button)
-		global bluetooth
-		bluetooth = BLE()
+		#global bluetooth
+		#bluetooth = BLE()
 		x = threading.Thread(target=bluetooth.startBluetoothConnection, args=(self.decoder,), daemon=True)
 		x.start()
 		#startBluetoothConnection(self.decoder)

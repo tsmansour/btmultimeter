@@ -10,10 +10,15 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from BLE_Windows_Mac import BLE
-import multiMeterGui
 
 bluetooth = BLE()
 decoder=BluetoothDecoder(fake=False)
+
+def close_application(self):
+	bluetooth.disconnectFromDevice()
+	App.get_running_app().stop()
+	Window.close()
+
 
 class DeviceCell(Button):
 
@@ -30,6 +35,8 @@ class DeviceCell(Button):
 
 		# Attempt to connect
 		bluetooth.address = self.device.address
+		App.get_running_app().stop()
+		return
 		x=threading.Thread(target=bluetooth.startBluetoothConnection, args=(decoder,), daemon=True)
 		x.start()
 		asyncio.run(bluetooth.connectAndGetData())
@@ -44,7 +51,6 @@ class DeviceCell(Button):
 			# If device not on Mydevice list Add to list
 
 			# Start BlueTooth
-			multiMeterGui.MultiMeterApp().run()
 
 		# if connection failed
 
@@ -81,4 +87,5 @@ class BtMenuApp(App):
 		return BtMenu()
 
 
-BtMenuApp().run()
+if __name__ == '__main__':
+	BtMenuApp().run()

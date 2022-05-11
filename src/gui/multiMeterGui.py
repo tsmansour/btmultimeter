@@ -16,6 +16,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.utils import get_color_from_hex as rgb
 from digitalDisplay import DigitalLayout
 import threading
+import btMenu
 
 ModeButtonsOptions = ['V~', 'V=', 'A', 'Ω', 'C/F', 'Light', '+']
 
@@ -125,6 +126,12 @@ def display_settings(self):
 	return
 
 
+def close_application(self):
+	bluetooth.disconnectFromDevice()
+	App.get_running_app().stop()
+	Window.close()
+
+
 class LeftMenu(BoxLayout):
 
 	def __init__(self, **kwargs):
@@ -199,7 +206,7 @@ class CenterTopMenu(StackLayout):
 
 		self.quit_button = Button(text="Quit", size_hint=(0.2, 1), background_normal='',
 		                         			background_color=rgb("#33B5E5"))
-		self.quit_button.bind(on_press = display_settings)
+		self.quit_button.bind(on_press = close_application)
 
 		self.add_widget(self.input_type_button)
 		self.add_widget(self.remove_button)
@@ -258,7 +265,7 @@ class MutliMeterApp(BoxLayout):
 		#bluetooth = BLE()
 		x = threading.Thread(target=bluetooth.startBluetoothConnection, args=(self.decoder,), daemon=True)
 		x.start()
-		#startBluetoothConnection(self.decoder)
+		#bluetooth.startBluetoothConnection(self.decoder)
 
 	def	sendDataToQueue(self, *args):
 		nextData = self.decoder.getNextPoint()
@@ -318,4 +325,5 @@ class MultiMeterApp(App):
 
 
 if __name__ == '__main__':
+	btMenu.BtMenuApp().run()
 	MultiMeterApp().run()

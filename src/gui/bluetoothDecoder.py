@@ -27,6 +27,7 @@ class BluetoothDecoder:
 
 	def addNextByte(self, newData):
 		data = int.from_bytes(newData, 'big')
+		print(data)
 		for i in range(0, 4):
                         self.bufferValues.append((data >> (8*i)) % 256)
 		self._updateAll()
@@ -38,8 +39,8 @@ class BluetoothDecoder:
 		return data >> 4, data & 15
 
 	def _getValue(self):
-		value = self.bufferValues[0]
-		value += self.bufferValue[1] << 8
+		value = self.bufferValues[3]
+		value += self.bufferValues[2] << 8
 		return value
 
 	def getNextPoint(self):
@@ -50,7 +51,8 @@ class BluetoothDecoder:
 		return self.storedData.get_nowait()
 
 	def _updateAll(self):
-		mode = MODES[self.bufferValues[2]]
+		print(self.bufferValues)
+		mode = MODES[self.bufferValues[1]]
 		attenuation = ATTENUATION.get(mode, DEFAULT_ATTENUATION)
 		value = self._getValue()
 		value = value * attenuation[0]

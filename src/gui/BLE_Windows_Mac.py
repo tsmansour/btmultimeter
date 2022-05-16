@@ -95,10 +95,10 @@ class BLE():
 
     def startBluetoothConnection(self, decoder) -> None:
         self.ble_obj = decoder
-        self.devicesList = asyncio.run(self.scanForDevices())
-        self.printDeviceList()
-        self.choice = input("Enter desired device: ")
-        self.address = self.decodeAddressFromList()
+        #self.devicesList = asyncio.run(self.scanForDevices())
+        #self.printDeviceList()
+        #self.choice = input("Enter desired device: ")
+        #self.address = self.decodeAddressFromList()
         if self.address != None:
             asyncio.run(self.connectAndGetData())
     

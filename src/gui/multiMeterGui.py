@@ -16,12 +16,12 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.utils import get_color_from_hex as rgb
 from digitalDisplay import DigitalLayout
 import threading
-import btMenu
 
 ModeButtonsOptions = ['V~', 'V=', 'A', 'Ω', 'C/F', 'Light', '+']
 
+bluetooth = BLE()
 testpoint = 80
-FAKE_DECODER = False
+FAKE_DECODER = True
 
 # Starting Environment
 # kivy_venv\Scripts\activate
@@ -119,14 +119,14 @@ def display_settings(self):
 	#    content=self.settings,
 	#    size_hint=(None, None), si
 	# ze=(200, 200))
-	btMenu.bluetooth.disconnectFromDevice()
+	bluetooth.disconnectFromDevice()
 	#app = self.parent.parent.parent
 	#app.open_settings()
 	return
 
 
 def close_application(self):
-	btMenu.bluetooth.disconnectFromDevice()
+	bluetooth.disconnectFromDevice()
 	App.get_running_app().stop()
 	Window.close()
 
@@ -262,7 +262,7 @@ class MutliMeterApp(BoxLayout):
 		swap_main(self.left_menu.current_button)
 		#global bluetooth
 		#bluetooth = BLE()
-		x = threading.Thread(target=btMenu.bluetooth.startBluetoothConnection, args=(self.decoder,), daemon=True)
+		x = threading.Thread(target=bluetooth.startBluetoothConnection, args=(self.decoder,), daemon=True)
 		x.start()
 		#bluetooth.startBluetoothConnection(self.decoder)
 
@@ -324,5 +324,4 @@ class MultiMeterApp(App):
 
 
 if __name__ == '__main__':
-	btMenu.BtMenuApp().run()
 	MultiMeterApp().run()

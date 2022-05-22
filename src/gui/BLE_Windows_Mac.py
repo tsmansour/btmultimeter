@@ -25,7 +25,13 @@ class BLE():
                 List
         """
         devices = await BleakScanner.discover()
-        return devices
+        our_devices = []
+        for d in devices:
+            for uuid in d.metadata["uuids"]:
+                if uuid[:8] == "00001101":
+                    our_devices.append(d)
+                    break
+        return our_devices
 
     async def connectAndGetData(self) -> None:
         """ Connect to desired device and read data from it continuously

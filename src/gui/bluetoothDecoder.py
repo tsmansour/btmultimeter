@@ -21,7 +21,6 @@ class BluetoothDecoder:
 		self.bufferValues = []
 		self.storedData = Queue()
 		self.fake = fake
-		self.mode = 0
 		if fake:
 			self.fakegen = self._fakeGenerator(10)
 
@@ -38,9 +37,9 @@ class BluetoothDecoder:
 		data = int.from_bytes(byte, 'big')
 		return data >> 4, data & 15
 
-	def _getValue(self):
-		value = self.bufferValues[self.mode*2]
-		value += self.bufferValues[self.mode*2 + 1] << 8
+	def _getValue(self, mode):
+		value = self.bufferValues[mode*2]
+		value += self.bufferValues[mode*2 + 1] << 8
 		return value
 
 	def getNextPoint(self):
@@ -51,16 +50,19 @@ class BluetoothDecoder:
 		return self.storedData.get_nowait()
 
 	def _updateAll(self):
-		mode = MODES[self.mode]
-		attenuation = ATTENUATION.get(mode, DEFAULT_ATTENUATION)
-		value = self._getValue()
-		value = value * attenuation[0]
-		self.storedData.put({
-			"type": mode,
-			"max_y": attenuation[1],
-			"min_y": attenuation[2],
-			"value": value,
-		})
+		data = []
+		for m in range(0, 3):
+                        mode = MODES[m]
+                        attenuation = ATTENUATION.get(mode, DEFAULT_ATTENUATION)
+                        value = self._getValue(m)
+                        value = value * attenuation[0]
+                        data.append({
+                                "type": mode,
+                                "max_y": attenuation[1],
+                                "min_y": attenuation[2],
+                                "value": value,
+                        })
+		self.storedData.put(data)
 
 	def _fakeGenerator(self, starting_at):
 		from random import randint

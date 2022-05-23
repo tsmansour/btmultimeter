@@ -182,10 +182,12 @@ class CenterTopMenu(StackLayout):
 	def __init__(self, **kwargs):
 		super(CenterTopMenu, self).__init__(**kwargs)
 		self.spacing = 3
+		self.mode = 0
 
 		self.input_type_button = Button(text="Input Type", size_hint=(0.2, 1), background_normal='',
-		                       						background_color=rgb("#33B5E5"), disabled = True, background_disabled_normal = "",
-							   						color = rgb("ffffff"))
+		                       						background_color=rgb("#33B5E5"))
+
+		self.input_type_button.bind(on_press = self.cycle_data_type)
 
 
 		self.remove_button = Button(text="Delete Recording", size_hint=(0.2, 1), background_normal='',
@@ -223,6 +225,9 @@ class CenterTopMenu(StackLayout):
 			print("Button is Up")
 			multimeter_button.selected_display = self.parent.parent.left_menu.multimeter_button.graph
 		swap_main(multimeter_button)
+
+	def cycle_data_type(self, *args):
+                self.mode = (self.mode+1)%3
 
 
 class CenterLayout(BoxLayout):
@@ -269,6 +274,7 @@ class MutliMeterApp(BoxLayout):
 	def	sendDataToQueue(self, *args):
 		nextData = self.decoder.getNextPoint()
 		if nextData:
+			nextData = nextData[self.center_layout.top_menu.mode]
 			print(nextData)
 			if self.center_layout.top_menu.input_type_button.text != nextData["type"]:
 				self.center_layout.top_menu.input_type_button.text = nextData["type"]

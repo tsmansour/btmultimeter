@@ -49,7 +49,7 @@ def add_new_button(self):
 
 	menu.button_count += 1
 
-	new_button = Button(text='New Button', size_hint=(1, 0.15), background_normal='')
+	new_button = Button(text='New Button', size_hint=(1, None), background_normal='', height=Window.height*0.094)
 	new_button.bind(on_press=swap_main)
 
 	new_button.btn_number = menu.button_count
@@ -140,7 +140,7 @@ class LeftMenu(BoxLayout):
 		scrolling_menu = ScrollView(size_hint=(1, 0.8))
 
 		add_button_menu = BoxLayout(orientation='vertical', size_hint=(1, 0.2))
-		menu = StackLayout(size_hint=(1, 0.8))
+		menu = StackLayout(size_hint=(1, None))
 		menu.background_normal = ''
 		menu.background_color = rgb("#000000")
 		menu.padding = 3
@@ -152,10 +152,10 @@ class LeftMenu(BoxLayout):
 		self.add_widget(add_button_menu)
 		add_button_menu.padding = 3
 
-		scrolling_menu.size = (scrolling_menu.parent.width, scrolling_menu.parent.height)
+		scrolling_menu.size = (scrolling_menu.parent.width, scrolling_menu.parent.height * 0.8)
 
 		menu.button_count = 1
-		btn1 = Button(text='Multimeter', size_hint=(1, 0.15), background_normal='')
+		btn1 = Button(text='Multimeter', size_hint=(1, None), background_normal='', height=Window.height*0.094)
 		btn1.input_type = 'Voltage'
 		btn1.btn_number = 1
 		btn1.bind(on_press=swap_main)
@@ -170,7 +170,8 @@ class LeftMenu(BoxLayout):
 		btn1.graph.padding = 3
 		self.multimeter_graph = btn1.selected_display
 		add_button_menu.add_button = Button(size_hint=(1, 1))
-		add_button_menu.add_button.text = '+'
+		add_button_menu.add_button.text = 'Load Graph\nFrom File'
+		add_button_menu.add_button.halign = 'center'
 		add_button_menu.add_button.background_normal = ''
 		add_button_menu.add_button.background_color = rgb("#33B5E5")
 		menu.add_widget(btn1)

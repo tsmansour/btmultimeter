@@ -68,12 +68,14 @@ class BluetoothDecoder:
 		from random import randint
 		current = starting_at
 		while True:
-			x = {
-				"type": 'Voltmeter',
-				"max_y": 40,
-				"min_y": 40,
-				"value": current,
-			}
+			x = []
+			for m in range(0, 3):
+                                x.append({
+                                        "type": MODES[m],
+                                        "max_y": 40,
+                                        "min_y": 40,
+                                        "value": current,
+                                })
 			y = current + randint(-1,1)
 			if -40 < y < 40:
 				current = y

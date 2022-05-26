@@ -169,11 +169,8 @@ class LeftMenu(BoxLayout):
 
 		btn1.graph.padding = 3
 		self.multimeter_graph = btn1.selected_display
-		add_button_menu.add_button = Button(size_hint=(1, 1))
-		add_button_menu.add_button.text = 'Load Graph\nFrom File'
-		add_button_menu.add_button.halign = 'center'
-		add_button_menu.add_button.background_normal = ''
-		add_button_menu.add_button.background_color = rgb("#33B5E5")
+		add_button_menu.add_button = Button(text='Load Graph\nFrom File', size_hint=(1, 1), background_normal='',
+                                                    background_color=rgb("#33B5E5"), halign='center')
 		menu.add_widget(btn1)
 
 		add_button_menu.add_widget(add_button_menu.add_button)

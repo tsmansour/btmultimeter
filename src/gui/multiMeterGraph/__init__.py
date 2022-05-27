@@ -32,23 +32,20 @@ class SaveButtonWithDropdown(Button):
         self.background_color = rgb("#33B5E5")
         self.dropdown = DropDown()
         self.size_hint_x = 0.30
-        btnSaveImage = Button(text='PNG', size_hint_y=None)
-        btnSaveImage.size_hint_max_x = 50
-        btnSaveData = Button(text='Data', size_hint_y=None)
-        btnSaveData.size_hint_max_x = 50
+        btnSaveImage = Button(text='PNG', size_hint=(1, None), height=Window.height * 0.06)
         btnSaveImage.bind(on_press=self.selectSaveImage)
-        btnSaveData.bind(on_press=self.selectSaveData)
-        self.assignedGraph: GraphWidget = assigned_graph
         self.dropdown.add_widget(btnSaveImage)
+        btnSaveData = Button(text='Data', size_hint=(1, None), height=Window.height * 0.06)
+        btnSaveData.bind(on_press=self.selectSaveData)
         self.dropdown.add_widget(btnSaveData)
-        self.dropdown.opacity = 0
+        self.assignedGraph: GraphWidget = assigned_graph
         self.dropdown.auto_dismiss = True
         self.add_widget(self.dropdown)
         self.bind(on_press=self.buttonRelease)
+        self.dropdown.dismiss()
 
     def buttonRelease(self, *args):
         self.dropdown.open(self)
-        self.dropdown.opacity = 100
 
     def selectSaveImage(self, *args):
         self.dropdown.dismiss()

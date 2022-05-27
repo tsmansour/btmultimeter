@@ -8,9 +8,9 @@ MODES = {
 
 # Add dividers and max/min when available here
 ATTENUATION = {
-	'Voltmeter': (0.001,    40,     -40),
+	'Voltmeter': (0.001,    40,     0),
 	'Ammeter': (0.001,    40,     -40),
-	'Ohmmeter': (1,     40000,      0)
+	'Ohmmeter': (0.001,     40,      0)
 }
 
 DEFAULT_ATTENUATION = (1, 40000, -40000)
@@ -25,10 +25,10 @@ class BluetoothDecoder:
 			self.fakegen = self._fakeGenerator(10)
 
 	def addNextByte(self, newData):
-		data = int.from_bytes(newData, 'big')
+		data = int.from_bytes(newData[2:4], 'big')
 		print(data)
-		for i in range(0, 6):
-                        self.bufferValues.append((data >> (8*(5-i))) % 256)
+		for i in range(0, 6, 2):
+                        self.bufferValues.append(int.from_bytes(newData[i:i+2], 'little', signed=True))
 		self._updateAll()
 		self.bufferValues.clear()
 
@@ -38,9 +38,7 @@ class BluetoothDecoder:
 		return data >> 4, data & 15
 
 	def _getValue(self, mode):
-		value = self.bufferValues[mode*2]
-		value += self.bufferValues[mode*2 + 1] << 8
-		return value
+		return self.bufferValues[mode]
 
 	def getNextPoint(self):
 		if self.fake:

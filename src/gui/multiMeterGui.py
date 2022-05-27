@@ -16,6 +16,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.utils import get_color_from_hex as rgb
 from digitalDisplay import DigitalLayout
 import threading
+from kivy.uix.dropdown import DropDown
 
 ModeButtonsOptions = ['V~', 'V=', 'A', 'Ω', 'C/F', 'Light', '+']
 
@@ -39,6 +40,34 @@ class ModeButton(Widget):
 		button.color = "red"
 		button.text = kwargs.get('text')
 		self.add_widget(button)
+
+
+class ModeSelectorButton(Button):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.dropdown = DropDown()
+        self.mode = 0
+        btn1 = Button(text='Voltmeter', size_hint=(1, None), height=Window.height * 0.08)
+        btn1.bind(on_press=lambda *args: self.setMode(0))
+        self.dropdown.add_widget(btn1)
+        btn2 = Button(text='Ammeter', size_hint=(1, None), height=Window.height * 0.08)
+        btn2.bind(on_press=lambda *args: self.setMode(1))
+        self.dropdown.add_widget(btn2)
+        btn3 = Button(text='Ohmmeter', size_hint=(1, None), height=Window.height * 0.08)
+        btn3.bind(on_press=lambda *args: self.setMode(2))
+        self.dropdown.add_widget(btn3)
+        self.dropdown.auto_dismiss = True
+        self.add_widget(self.dropdown)
+        self.bind(on_press=self.buttonRelease)
+        self.dropdown.dismiss()
+
+    def buttonRelease(self, *args):
+        self.dropdown.open(self)
+        
+    def setMode(self, m):
+        self.mode = m
+        self.dropdown.dismiss()
 
 
 def add_new_button(self):
@@ -152,7 +181,7 @@ class LeftMenu(BoxLayout):
 		self.add_widget(add_button_menu)
 		add_button_menu.padding = 3
 
-		scrolling_menu.size = (scrolling_menu.parent.width, scrolling_menu.parent.height * 0.8)
+		scrolling_menu.size = (scrolling_menu.parent.width, scrolling_menu.parent.height)
 
 		menu.button_count = 1
 		btn1 = Button(text='Multimeter', size_hint=(1, None), background_normal='', height=Window.height*0.094)
@@ -169,8 +198,11 @@ class LeftMenu(BoxLayout):
 
 		btn1.graph.padding = 3
 		self.multimeter_graph = btn1.selected_display
-		add_button_menu.add_button = Button(text='Load Graph\nFrom File', size_hint=(1, 1), background_normal='',
-                                                    background_color=rgb("#33B5E5"), halign='center')
+		add_button_menu.add_button = Button(size_hint=(1, 1))
+		add_button_menu.add_button.text = 'Load Graph\nFrom File'
+		add_button_menu.add_button.halign = 'center'
+		add_button_menu.add_button.background_normal = ''
+		add_button_menu.add_button.background_color = rgb("#33B5E5")
 		menu.add_widget(btn1)
 
 		add_button_menu.add_widget(add_button_menu.add_button)
@@ -180,12 +212,11 @@ class CenterTopMenu(StackLayout):
 	def __init__(self, **kwargs):
 		super(CenterTopMenu, self).__init__(**kwargs)
 		self.spacing = 3
-		self.mode = 0
 
-		self.input_type_button = Button(text="Input Type", size_hint=(0.2, 1), background_normal='',
+		self.input_type_button = ModeSelectorButton(text="Input Type", size_hint=(0.2, 1), background_normal='',
 		                       						background_color=rgb("#33B5E5"))
 
-		self.input_type_button.bind(on_press = self.cycle_data_type)
+		#self.input_type_button.bind(on_press = self.cycle_data_type)
 
 
 		self.remove_button = Button(text="Delete Recording", size_hint=(0.2, 1), background_normal='',
@@ -223,9 +254,6 @@ class CenterTopMenu(StackLayout):
 			print("Button is Up")
 			multimeter_button.selected_display = self.parent.parent.left_menu.multimeter_button.graph
 		swap_main(multimeter_button)
-
-	def cycle_data_type(self, *args):
-                self.mode = (self.mode+1)%3
 
 
 class CenterLayout(BoxLayout):
@@ -272,7 +300,7 @@ class MutliMeterApp(BoxLayout):
 	def	sendDataToQueue(self, *args):
 		nextData = self.decoder.getNextPoint()
 		if nextData:
-			nextData = nextData[self.center_layout.top_menu.mode]
+			nextData = nextData[self.center_layout.top_menu.input_type_button.mode]
 			print(nextData)
 			if self.center_layout.top_menu.input_type_button.text != nextData["type"]:
 				self.center_layout.top_menu.input_type_button.text = nextData["type"]

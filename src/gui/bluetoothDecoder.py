@@ -10,7 +10,7 @@ MODES = {
 ATTENUATION = {
 	'Voltmeter': (0.001,    40,     0),
 	'Ammeter': (0.001,    40,     -40),
-	'Ohmmeter': (0.001,     40,      0)
+	'Ohmmeter': (1,     40000,      0)
 }
 
 DEFAULT_ATTENUATION = (1, 40000, -40000)

@@ -40,24 +40,28 @@ class DeviceCell(Button):
 		x=threading.Thread(target=bluetooth.startBluetoothConnection, args=(decoder,), daemon=True)
 		x.start()
 		#asyncio.run(bluetooth.connectAndGetData())
-		time.sleep(7)
+		for i in range(0,12):
+                        time.sleep(1)
 
-		# if connection success
-		if bluetooth.getConnectionStatus():
-			# Update status to connected
-			self.status_bar.text = f'Connected to {self.device.name}'
+                        # if connection success
+                        if bluetooth.getConnectionStatus():
+                                # Update status to connected
+                                self.status_bar.text = f'Connected to {self.device.name}'
 
-			# Assign device to bluetooth connceted device
-			multiMeterGui.bluetooth.address = self.device.address
+                                # Assign device to bluetooth connceted device
+                                multiMeterGui.bluetooth.address = self.device.address
 
-			# If device not on Mydevice list Add to list
+                                # If device not on Mydevice list Add to list
 
-			# Start BlueTooth
-			bluetooth.disconnectFromDevice()
-			App.get_running_app().stop()
+                                # Start BlueTooth
+                                bluetooth.disconnectFromDevice()
+                                App.get_running_app().stop()
+                                multiMeterGui.MultiMeterApp().run()
+                                return
 
 		# if connection failed
 		self.status_bar.text = f'Failed to connect to {self.device.name}'
+		close_application(self)
 
 
 
@@ -95,4 +99,3 @@ class BtMenuApp(App):
 if __name__ == '__main__':
 	multiMeterGui.FAKE_DECODER = False
 	BtMenuApp().run()
-	multiMeterGui.MultiMeterApp().run()

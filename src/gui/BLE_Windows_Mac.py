@@ -109,7 +109,7 @@ class BLE():
             asyncio.run(self.connectAndGetData())
     
     def getConnectionStatus(self) -> bool: 
-        return self.client.is_connected
+        return (self.client != None) and self.client.is_connected
     
     def disconnectFromDevice(self) -> None:
         self.continueBleData = False

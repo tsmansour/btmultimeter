@@ -216,8 +216,6 @@ class CenterTopMenu(StackLayout):
 		self.input_type_button = ModeSelectorButton(text="Input Type", size_hint=(0.2, 1), background_normal='',
 		                       						background_color=rgb("#33B5E5"))
 
-		#self.input_type_button.bind(on_press = self.cycle_data_type)
-
 
 		self.remove_button = Button(text="Delete Recording", size_hint=(0.2, 1), background_normal='',
 		                       					background_color=rgb("#33B5E5"))
@@ -301,7 +299,6 @@ class MutliMeterApp(BoxLayout):
 		nextData = self.decoder.getNextPoint()
 		if nextData:
 			nextData = nextData[self.center_layout.top_menu.input_type_button.mode]
-			print(nextData)
 			if self.center_layout.top_menu.input_type_button.text != nextData["type"]:
 				self.center_layout.top_menu.input_type_button.text = nextData["type"]
 				self.updateGraphTitles(nextData["type"])
@@ -315,23 +312,23 @@ class MutliMeterApp(BoxLayout):
 
 	def updateGraphTitles(self, nextDataType):
 		if nextDataType == 'Voltmeter':
-			self.multimeter_graph.graphProfile.yLabel = "Volts (Vrms)"
+			self.multimeter_graph.graphProfile.ylabel = "Volts (Vrms)"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Ammeter':
-			self.multimeter_graph.graphProfile.yLabel = "Amps (A)"
+			self.multimeter_graph.graphProfile.ylabel = "Amps (A)"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Ohmmeter':
-			self.multimeter_graph.graphProfile.yLabel = "Ohms (Ω)"
+			self.multimeter_graph.graphProfile.ylabel = "Ohms (Ω)"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Light Sensor':
-			self.multimeter_graph.graphProfile.yLabel = "Light Units"
+			self.multimeter_graph.graphProfile.ylabel = "Light Units"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Temperature Sensor':
-			self.multimeter_graph.graphProfile.yLabel = "Temperature Units"
+			self.multimeter_graph.graphProfile.ylabel = "Temperature Units"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		

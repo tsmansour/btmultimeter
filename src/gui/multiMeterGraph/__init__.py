@@ -191,7 +191,7 @@ class GraphWidget(Graph):
                 else:
                     self.point_label.pos = self.graph_pos_to_window_pos(*point_ref)
                 self.plot_points.points = [point_ref]
-                print(f'X:{x} Y:{y}')
+                #print(f'X:{x} Y:{y}')
 
     def _getNewEventTrigger(self):
         return Clock.create_trigger(self.update_points, interval=True, timeout=1 / 10)
@@ -404,7 +404,7 @@ class GraphLayout(GridLayout):
         bottom.add_widget(btnCancel)
         layout.add_widget(bottom)
         popup.content = layout
-        print(fc.path)
+        #print(fc.path)
         popup.open()
 
 
@@ -413,11 +413,11 @@ class GraphLayout(GridLayout):
     @staticmethod
     def getTableFromFile(path, new_button, menu, popup):
         split = path[0].split('\\')
-        print(split)
+        #print(split)
         path = split[0]
         for element in split[1:]:
             path += '/' + element 
-        print(path)
+        #print(path)
         data = {}
         if os.path.exists(path):
             with open(path, 'r') as inFile:
@@ -447,7 +447,7 @@ class GraphLayout(GridLayout):
         new_button.selected = False
         new_button.graph.padding = 3
         new_button.text = newProfile.input_type + "\n" + "(" + split[-1] + ")"
-        print(newProfile.title)
+        #print(newProfile.title)
         new_button.graph.topRow.graphTitle.title_input.text = newProfile.title
         new_button.graph.topRow.recordButton.background_normal = ''
         new_button.graph.topRow.recordButton.text = ''

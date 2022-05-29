@@ -244,6 +244,7 @@ class GraphWidget(Graph):
         self.plot.points = []
         self.plot_points.points = []
         self.point_label.disabled = True
+        self.point_label.text = ""
         self.vbar.points = []
 
     def add_point(self, value):

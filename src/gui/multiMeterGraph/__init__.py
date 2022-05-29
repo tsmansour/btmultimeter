@@ -152,7 +152,7 @@ class GraphWidget(Graph):
         self.vbar = VBar()
         self.add_plot(self.vbar)
         self.plot_points = PointPlot(color=rgb('000000'))
-        self.plot_points.point_size = 5
+        self.plot_points.point_size = 4
         self.add_plot(self.plot_points)
         self.hasXValchanged = False
 
@@ -190,11 +190,7 @@ class GraphWidget(Graph):
                                            self.graph_pos_to_window_pos(*point_ref)[1]
                 else:
                     self.point_label.pos = self.graph_pos_to_window_pos(*point_ref)
-                if 'right' == mouseMotion.button:
-                    if len(self.plot_points.points):
-                        self.plot_points.points.pop()
-                else:
-                    self.plot_points.points.append(point_ref)
+                self.plot_points.points = [point_ref]
                 print(f'X:{x} Y:{y}')
 
     def _getNewEventTrigger(self):

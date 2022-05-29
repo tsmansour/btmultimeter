@@ -313,22 +313,27 @@ class MutliMeterApp(BoxLayout):
 	def updateGraphTitles(self, nextDataType):
 		if nextDataType == 'Voltmeter':
 			self.multimeter_graph.graphProfile.ylabel = "Volts (Vrms)"
+			self.multimeter_graph.graphProfile.input_type = "Voltage"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Ammeter':
 			self.multimeter_graph.graphProfile.ylabel = "Amps (A)"
+			self.multimeter_graph.graphProfile.input_type = "Current"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Ohmmeter':
 			self.multimeter_graph.graphProfile.ylabel = "Ohms (Ω)"
+			self.multimeter_graph.graphProfile.input_type = "Resistance"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Light Sensor':
 			self.multimeter_graph.graphProfile.ylabel = "Light Units"
+			self.multimeter_graph.graphProfile.input_type = "Light"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Temperature Sensor':
 			self.multimeter_graph.graphProfile.ylabel = "Temperature Units"
+			self.multimeter_graph.graphProfile.input_type = "Temperature"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		

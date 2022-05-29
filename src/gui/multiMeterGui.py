@@ -71,7 +71,7 @@ class ModeSelectorButton(Button):
 
 
 def add_new_button(self):
-	print("Creating a new Button")
+	#print("Creating a new Button")
 
 	outer_menu = self.parent.parent
 	menu = outer_menu.children[1].children[0]
@@ -94,7 +94,7 @@ def add_new_button(self):
 
 
 def swap_main(self):
-	print("Swapping the main display")
+	#print("Swapping the main display")
 	total_layout = self.parent.parent.parent.parent
 	main_layout = total_layout.children[0].children[0]
 	main_layout_top_bar = total_layout.children[0].children[1]
@@ -126,7 +126,7 @@ def swap_main(self):
 
 
 def delete_button(self):
-	print("Deleting button")
+	#print("Deleting button")
 	total_layout = self.parent.parent.parent
 	menu = total_layout.children[1].children[1].children[0]
 	if len(menu.children) > 1:
@@ -246,10 +246,10 @@ class CenterTopMenu(StackLayout):
 		state = self.display_selector.state
 		multimeter_button = self.parent.parent.left_menu.multimeter_button
 		if state == 'down':
-			print("Button is Down")
+			#print("Button is Down")
 			multimeter_button.selected_display = self.parent.parent.left_menu.multimeter_button.digital_display
 		if state == 'normal':
-			print("Button is Up")
+			#print("Button is Up")
 			multimeter_button.selected_display = self.parent.parent.left_menu.multimeter_button.graph
 		swap_main(multimeter_button)
 

@@ -42,15 +42,15 @@ class BLE():
                 None
         """
         async with BleakClient(self.address) as self.client:
-            print(f"Connected: {self.client.is_connected}")
+            #print(f"Connected: {self.client.is_connected}")
             # Get UUID for notify service
             for service in self.client.services:
                 for char in service.characteristics:
                     if "notify" in char.properties:                
                         self.UUID = char.uuid
                             
-            print("Address: ", self.address)
-            print("UUID: ", self.UUID)
+            #print("Address: ", self.address)
+            #print("UUID: ", self.UUID)
             self.continueBleData = True
             
             # Get data until disconnect signal given
@@ -61,7 +61,7 @@ class BLE():
             
             # Disconnect from device
             await self.client.disconnect()
-            print(f"Connected: {self.client.is_connected}")
+            #print(f"Connected: {self.client.is_connected}")
 
     def notification_handler(self, sender, data) -> None:
         """ Notification handler which prints the data received.
@@ -71,7 +71,7 @@ class BLE():
             Return:
                 None
         """
-        print("{0}: {1}".format(sender, bytes(data)))
+        #print("{0}: {1}".format(sender, bytes(data)))
         self.ble_obj.addNextByte(bytes(data))
 
     def printDeviceList(self) -> None:

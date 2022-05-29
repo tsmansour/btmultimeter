@@ -12,6 +12,7 @@ from kivy.uix.widget import Widget
 from BLE_Windows_Mac import BLE
 import multiMeterGui
 import time
+from kivy.core.window import Window
 
 bluetooth = BLE()
 decoder=BluetoothDecoder(fake=False)
@@ -27,7 +28,7 @@ class DeviceCell(Button):
 	device = ObjectProperty()
 
 	def on_release(self):
-		print(f'selected {self.device.name}')
+		#print(f'selected {self.device.name}')
 		"""TODO: complete cell connect press"""
 		# Disconnect and existing connections
 		bluetooth.disconnectFromDevice()

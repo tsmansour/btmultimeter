@@ -1,5 +1,5 @@
 from bluetoothDecoder import BluetoothDecoder
-from BLE_Windows_Mac import startBluetoothConnection
+from BLE_Windows_Mac import BLE
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
@@ -16,11 +16,13 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.utils import get_color_from_hex as rgb
 from digitalDisplay import DigitalLayout
 import threading
+from kivy.uix.dropdown import DropDown
 
 ModeButtonsOptions = ['V~', 'V=', 'A', 'Ω', 'C/F', 'Light', '+']
 
+bluetooth = BLE()
 testpoint = 80
-FAKE_DECODER = False
+FAKE_DECODER = True
 
 # Starting Environment
 # kivy_venv\Scripts\activate
@@ -40,15 +42,43 @@ class ModeButton(Widget):
 		self.add_widget(button)
 
 
+class ModeSelectorButton(Button):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.dropdown = DropDown()
+        self.mode = 0
+        btn1 = Button(text='Voltmeter', size_hint=(1, None), height=Window.height * 0.08)
+        btn1.bind(on_press=lambda *args: self.setMode(0))
+        self.dropdown.add_widget(btn1)
+        btn2 = Button(text='Ammeter', size_hint=(1, None), height=Window.height * 0.08)
+        btn2.bind(on_press=lambda *args: self.setMode(1))
+        self.dropdown.add_widget(btn2)
+        btn3 = Button(text='Ohmmeter', size_hint=(1, None), height=Window.height * 0.08)
+        btn3.bind(on_press=lambda *args: self.setMode(2))
+        self.dropdown.add_widget(btn3)
+        self.dropdown.auto_dismiss = True
+        self.add_widget(self.dropdown)
+        self.bind(on_press=self.buttonRelease)
+        self.dropdown.dismiss()
+
+    def buttonRelease(self, *args):
+        self.dropdown.open(self)
+        
+    def setMode(self, m):
+        self.mode = m
+        self.dropdown.dismiss()
+
+
 def add_new_button(self):
-	print("Creating a new Button")
+	#print("Creating a new Button")
 
 	outer_menu = self.parent.parent
 	menu = outer_menu.children[1].children[0]
 
 	menu.button_count += 1
 
-	new_button = Button(text='New Button', size_hint=(1, 0.15), background_normal='')
+	new_button = Button(text='New Button', size_hint=(1, None), background_normal='', height=Window.height*0.094)
 	new_button.bind(on_press=swap_main)
 
 	new_button.btn_number = menu.button_count
@@ -64,7 +94,7 @@ def add_new_button(self):
 
 
 def swap_main(self):
-	print("Swapping the main display")
+	#print("Swapping the main display")
 	total_layout = self.parent.parent.parent.parent
 	main_layout = total_layout.children[0].children[0]
 	main_layout_top_bar = total_layout.children[0].children[1]
@@ -96,7 +126,7 @@ def swap_main(self):
 
 
 def delete_button(self):
-	print("Deleting button")
+	#print("Deleting button")
 	total_layout = self.parent.parent.parent
 	menu = total_layout.children[1].children[1].children[0]
 	if len(menu.children) > 1:
@@ -118,9 +148,16 @@ def display_settings(self):
 	#    content=self.settings,
 	#    size_hint=(None, None), si
 	# ze=(200, 200))
-	app = self.parent.parent.parent
-	app.open_settings()
+	bluetooth.disconnectFromDevice()
+	#app = self.parent.parent.parent
+	#app.open_settings()
 	return
+
+
+def close_application(self):
+	bluetooth.disconnectFromDevice()
+	App.get_running_app().stop()
+	Window.close()
 
 
 class LeftMenu(BoxLayout):
@@ -132,7 +169,7 @@ class LeftMenu(BoxLayout):
 		scrolling_menu = ScrollView(size_hint=(1, 0.8))
 
 		add_button_menu = BoxLayout(orientation='vertical', size_hint=(1, 0.2))
-		menu = StackLayout(size_hint=(1, 0.8))
+		menu = StackLayout(size_hint=(1, None))
 		menu.background_normal = ''
 		menu.background_color = rgb("#000000")
 		menu.padding = 3
@@ -147,7 +184,7 @@ class LeftMenu(BoxLayout):
 		scrolling_menu.size = (scrolling_menu.parent.width, scrolling_menu.parent.height)
 
 		menu.button_count = 1
-		btn1 = Button(text='Multimeter', size_hint=(1, 0.15), background_normal='')
+		btn1 = Button(text='Multimeter', size_hint=(1, None), background_normal='', height=Window.height*0.094)
 		btn1.input_type = 'Voltage'
 		btn1.btn_number = 1
 		btn1.bind(on_press=swap_main)
@@ -162,7 +199,8 @@ class LeftMenu(BoxLayout):
 		btn1.graph.padding = 3
 		self.multimeter_graph = btn1.selected_display
 		add_button_menu.add_button = Button(size_hint=(1, 1))
-		add_button_menu.add_button.text = '+'
+		add_button_menu.add_button.text = 'Load Graph\nFrom File'
+		add_button_menu.add_button.halign = 'center'
 		add_button_menu.add_button.background_normal = ''
 		add_button_menu.add_button.background_color = rgb("#33B5E5")
 		menu.add_widget(btn1)
@@ -175,9 +213,8 @@ class CenterTopMenu(StackLayout):
 		super(CenterTopMenu, self).__init__(**kwargs)
 		self.spacing = 3
 
-		self.input_type_button = Button(text="Input Type", size_hint=(0.2, 1), background_normal='',
-		                       						background_color=rgb("#33B5E5"), disabled = True, background_disabled_normal = "",
-							   						color = rgb("ffffff"))
+		self.input_type_button = ModeSelectorButton(text="Input Type", size_hint=(0.2, 1), background_normal='',
+		                       						background_color=rgb("#33B5E5"))
 
 
 		self.remove_button = Button(text="Delete Recording", size_hint=(0.2, 1), background_normal='',
@@ -197,7 +234,7 @@ class CenterTopMenu(StackLayout):
 
 		self.quit_button = Button(text="Quit", size_hint=(0.2, 1), background_normal='',
 		                         			background_color=rgb("#33B5E5"))
-		self.quit_button.bind(on_press = display_settings)
+		self.quit_button.bind(on_press = close_application)
 
 		self.add_widget(self.input_type_button)
 		self.add_widget(self.remove_button)
@@ -209,10 +246,10 @@ class CenterTopMenu(StackLayout):
 		state = self.display_selector.state
 		multimeter_button = self.parent.parent.left_menu.multimeter_button
 		if state == 'down':
-			print("Button is Down")
+			#print("Button is Down")
 			multimeter_button.selected_display = self.parent.parent.left_menu.multimeter_button.digital_display
 		if state == 'normal':
-			print("Button is Up")
+			#print("Button is Up")
 			multimeter_button.selected_display = self.parent.parent.left_menu.multimeter_button.graph
 		swap_main(multimeter_button)
 
@@ -252,14 +289,16 @@ class MutliMeterApp(BoxLayout):
 		Clock.schedule_interval(self.sendDataToQueue, 1 / 10)
 		Clock.schedule_interval(self.add_to_graph, 1 / 10)
 		swap_main(self.left_menu.current_button)
-		x = threading.Thread(target=startBluetoothConnection, args=(self.decoder,), daemon=True)
+		#global bluetooth
+		#bluetooth = BLE()
+		x = threading.Thread(target=bluetooth.startBluetoothConnection, args=(self.decoder,), daemon=True)
 		x.start()
-		#startBluetoothConnection(self.decoder)
+		#bluetooth.startBluetoothConnection(self.decoder)
 
 	def	sendDataToQueue(self, *args):
 		nextData = self.decoder.getNextPoint()
 		if nextData:
-			print(nextData)
+			nextData = nextData[self.center_layout.top_menu.input_type_button.mode]
 			if self.center_layout.top_menu.input_type_button.text != nextData["type"]:
 				self.center_layout.top_menu.input_type_button.text = nextData["type"]
 				self.updateGraphTitles(nextData["type"])
@@ -273,23 +312,28 @@ class MutliMeterApp(BoxLayout):
 
 	def updateGraphTitles(self, nextDataType):
 		if nextDataType == 'Voltmeter':
-			self.multimeter_graph.graphProfile.yLabel = "Volts (Vrms)"
+			self.multimeter_graph.graphProfile.ylabel = "Volts (Vrms)"
+			self.multimeter_graph.graphProfile.input_type = "Voltage"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Ammeter':
-			self.multimeter_graph.graphProfile.yLabel = "Amps (A)"
+			self.multimeter_graph.graphProfile.ylabel = "Amps (A)"
+			self.multimeter_graph.graphProfile.input_type = "Current"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Ohmmeter':
-			self.multimeter_graph.graphProfile.yLabel = "Ohms (Ω)"
+			self.multimeter_graph.graphProfile.ylabel = "Ohms (Ω)"
+			self.multimeter_graph.graphProfile.input_type = "Resistance"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Light Sensor':
-			self.multimeter_graph.graphProfile.yLabel = "Light Units"
+			self.multimeter_graph.graphProfile.ylabel = "Light Units"
+			self.multimeter_graph.graphProfile.input_type = "Light"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		if nextDataType == 'Temperature Sensor':
-			self.multimeter_graph.graphProfile.yLabel = "Temperature Units"
+			self.multimeter_graph.graphProfile.ylabel = "Temperature Units"
+			self.multimeter_graph.graphProfile.input_type = "Temperature"
 			self.multimeter_graph.graphProfile.ymin = 0
 			self.multimeter_graph.graphProfile.ymax = 0.4
 		

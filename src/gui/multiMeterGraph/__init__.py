@@ -32,23 +32,20 @@ class SaveButtonWithDropdown(Button):
         self.background_color = rgb("#33B5E5")
         self.dropdown = DropDown()
         self.size_hint_x = 0.30
-        btnSaveImage = Button(text='PNG', size_hint_y=None)
-        btnSaveImage.size_hint_max_x = 50
-        btnSaveData = Button(text='Data', size_hint_y=None)
-        btnSaveData.size_hint_max_x = 50
+        btnSaveImage = Button(text='PNG', size_hint=(1, None), height=Window.height * 0.06)
         btnSaveImage.bind(on_press=self.selectSaveImage)
-        btnSaveData.bind(on_press=self.selectSaveData)
-        self.assignedGraph: GraphWidget = assigned_graph
         self.dropdown.add_widget(btnSaveImage)
+        btnSaveData = Button(text='Data', size_hint=(1, None), height=Window.height * 0.06)
+        btnSaveData.bind(on_press=self.selectSaveData)
         self.dropdown.add_widget(btnSaveData)
-        self.dropdown.opacity = 0
+        self.assignedGraph: GraphWidget = assigned_graph
         self.dropdown.auto_dismiss = True
         self.add_widget(self.dropdown)
         self.bind(on_press=self.buttonRelease)
+        self.dropdown.dismiss()
 
     def buttonRelease(self, *args):
         self.dropdown.open(self)
-        self.dropdown.opacity = 100
 
     def selectSaveImage(self, *args):
         self.dropdown.dismiss()
@@ -155,7 +152,7 @@ class GraphWidget(Graph):
         self.vbar = VBar()
         self.add_plot(self.vbar)
         self.plot_points = PointPlot(color=rgb('000000'))
-        self.plot_points.point_size = 5
+        self.plot_points.point_size = 4
         self.add_plot(self.plot_points)
         self.hasXValchanged = False
 
@@ -193,12 +190,8 @@ class GraphWidget(Graph):
                                            self.graph_pos_to_window_pos(*point_ref)[1]
                 else:
                     self.point_label.pos = self.graph_pos_to_window_pos(*point_ref)
-                if 'right' == mouseMotion.button:
-                    if len(self.plot_points.points):
-                        self.plot_points.points.pop()
-                else:
-                    self.plot_points.points.append(point_ref)
-                print(f'X:{x} Y:{y}')
+                self.plot_points.points = [point_ref]
+                #print(f'X:{x} Y:{y}')
 
     def _getNewEventTrigger(self):
         return Clock.create_trigger(self.update_points, interval=True, timeout=1 / 10)
@@ -247,6 +240,7 @@ class GraphWidget(Graph):
         self.plot.points = []
         self.plot_points.points = []
         self.point_label.disabled = True
+        self.point_label.text = ""
         self.vbar.points = []
 
     def add_point(self, value):
@@ -410,7 +404,7 @@ class GraphLayout(GridLayout):
         bottom.add_widget(btnCancel)
         layout.add_widget(bottom)
         popup.content = layout
-        print(fc.path)
+        #print(fc.path)
         popup.open()
 
 
@@ -419,11 +413,11 @@ class GraphLayout(GridLayout):
     @staticmethod
     def getTableFromFile(path, new_button, menu, popup):
         split = path[0].split('\\')
-        print(split)
+        #print(split)
         path = split[0]
         for element in split[1:]:
             path += '/' + element 
-        print(path)
+        #print(path)
         data = {}
         if os.path.exists(path):
             with open(path, 'r') as inFile:
@@ -453,7 +447,7 @@ class GraphLayout(GridLayout):
         new_button.selected = False
         new_button.graph.padding = 3
         new_button.text = newProfile.input_type + "\n" + "(" + split[-1] + ")"
-        print(newProfile.title)
+        #print(newProfile.title)
         new_button.graph.topRow.graphTitle.title_input.text = newProfile.title
         new_button.graph.topRow.recordButton.background_normal = ''
         new_button.graph.topRow.recordButton.text = ''

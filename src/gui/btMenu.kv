@@ -1,0 +1,100 @@
+BtMenu:
+
+<BtMenu>:
+    id: btMenu_layout
+    orientation: "vertical"
+
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint: None, None
+        width: btMenu_layout.width
+        height: "40dp"
+        id: topBoxLayout
+        padding: 10, 0
+
+        Label:
+            id: status_label
+            width: 50
+            size_hint: None, 1
+            halign: 'left'
+            valign: 'center'
+            bold: True
+            text: "Status:"
+        Label:
+            size_hint: None, 1
+            width: topBoxLayout.width - status_label.width - 20
+            text_size: self.width, None
+            id: status_status
+            halign: 'right'
+            right: True
+            text: "Not Connected"
+
+    HorizontalSeparator
+
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint: 1., None
+        height: "40dp"
+        id: boxLayout
+        padding: 10, 0
+
+        Label:
+            width: boxLayout.width - search_button.width
+            text_size: self.width, None
+            size_hint: .5, 1
+            halign: 'left'
+            valign: 'center'
+            bold: True
+            text: "Devices"
+        Button:
+            size_hint: None,1
+            width: "100dp"
+            id: search_button
+            halign: 'center'
+            right: True
+            text: "Search"
+            on_release: btMenu_layout.bt_search_event()
+
+    DeviceRecycleView:
+        id: devices_recycle_list
+
+
+<DeviceCell>
+    size_hint: .8, 1
+    text_size: self.width, None
+    padding: 10, 10
+    left: True
+
+
+<DeviceRecycleView>:
+    viewclass: 'DeviceCell'
+    RecycleBoxLayout:
+        default_size: None, 40
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+
+<HorizontalSeparator@Widget>:
+    size_hint: 1, None
+    height: 30
+    canvas:
+        Color:
+            rgb: 0., 0., 1.
+        Rectangle:
+            pos: 0, self.center_y
+            size: self.width, 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
